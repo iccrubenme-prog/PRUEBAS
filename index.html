@@ -401,6 +401,103 @@
 
 
     .gate-logo { display:block; width:104px; height:104px; margin:0 auto 10px; object-fit:contain; background:transparent; }
+
+        /* ===== Modo "app" para el repartidor en celular ===== */
+        #app-tabbar, .app-solo-movil { display: none; }
+        @media (max-width: 768px) {
+            body.vista-repartidor { display: block; height: 100dvh; overflow: hidden; background: #f5ece3; }
+            body.vista-repartidor #map-wrapper { position: fixed; top: 0; left: 0; right: 0; bottom: 62px; width: auto; height: auto; }
+            body.vista-repartidor #sidebar {
+                display: none; position: fixed; left: 0; right: 0; top: 96px; bottom: 62px; width: auto; min-width: 0;
+                max-height: none; background: #fffdf9; border-radius: 26px 26px 0 0; z-index: 1500;
+                box-shadow: 0 -8px 24px rgba(90,61,38,.28); overflow: hidden;
+            }
+            body.vista-repartidor.tab-clientes #sidebar { display: flex; }
+            body.vista-repartidor #sidebar .header { display: none; }
+            body.vista-repartidor #sidebar::before {
+                content: ""; display: block; width: 42px; height: 5px; border-radius: 5px; background: #e1d3c0; margin: 10px auto 2px; flex-shrink: 0;
+            }
+            body.vista-repartidor #barra-progreso-entregas { background: #fffdf9 !important; border-bottom: 1px solid #f0e6d8 !important; }
+            body.vista-repartidor #barra-progreso-entregas-fill { background: #D7B182 !important; }
+            body.vista-repartidor #texto-progreso-entregas { color: #5a3d26 !important; }
+
+            body.vista-repartidor #app-tabbar {
+                display: flex; position: fixed; left: 0; right: 0; bottom: 0; height: 62px; z-index: 3000;
+                background: #fff; border-top: 1px solid #eadfcf; padding-bottom: env(safe-area-inset-bottom);
+            }
+            #app-tabbar button {
+                flex: 1; background: none; border: none; box-shadow: none; border-radius: 0; color: #a07a4e;
+                font-size: 10.5px; padding: 8px 0 0; cursor: pointer; transform: none !important;
+            }
+            #app-tabbar button span { display: block; font-size: 20px; line-height: 1.2; }
+            #app-tabbar button.on { color: #5a3d26; font-weight: 800; }
+
+            /* Tarjeta superior flotante */
+            body.vista-repartidor #nav-barra-superior {
+                top: 12px !important; left: 12px !important; right: 12px !important; transform: none !important;
+                width: auto !important; max-width: none !important; background: #fffdf9 !important;
+                border-radius: 20px !important; border-bottom: 3px solid #D7B182; padding: 9px 12px !important;
+                box-shadow: 0 6px 18px rgba(90,61,38,.28) !important;
+            }
+            body.vista-repartidor #nav-barra-superior > div:first-child { display: none !important; }
+            body.vista-repartidor #nav-superior-eta-badge { display: none !important; }
+            body.vista-repartidor #nav-superior-nombre { color: #5a3d26 !important; font-size: 15px !important; }
+            body.vista-repartidor #nav-superior-direccion { color: #a07a4e !important; font-size: 11.5px !important; }
+            body.vista-repartidor .app-solo-movil.app-logo-top { display: block; width: 34px; height: 34px; flex-shrink: 0; }
+            body.vista-repartidor #app-ruta-titulo { display: block; font-size: 10px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: #b8894f; }
+            body.vista-repartidor #app-chip-progreso {
+                display: block; background: #f5ece3; border-radius: 14px; padding: 5px 10px; text-align: center;
+                font-weight: 800; color: #5a3d26; font-size: 15px; line-height: 1.1; flex-shrink: 0;
+            }
+            #app-chip-progreso small { display: block; font-size: 9.5px; font-weight: 600; color: #a07a4e; }
+            body.vista-repartidor #app-barra-progreso {
+                display: block; position: absolute; top: 80px; left: 24px; right: 24px; height: 6px; border-radius: 6px;
+                background: rgba(255,255,255,.88); overflow: hidden; z-index: 1000; box-shadow: 0 1px 3px rgba(0,0,0,.15);
+            }
+            #app-barra-progreso i { display: block; height: 100%; width: 0; background: #D7B182; transition: width .3s; }
+
+            /* Botones flotantes */
+            body.vista-repartidor #nav-botones-circulares { bottom: calc(var(--sheet-h, 260px) + 14px) !important; }
+            body.vista-repartidor #nav-botones-circulares button { background: #fffdf9 !important; }
+            body.vista-repartidor .leaflet-bottom { bottom: var(--sheet-h, 260px); }
+            body.vista-repartidor .leaflet-control-zoom { display: none; }
+
+            /* Hoja inferior */
+            body.vista-repartidor #nav-barra-inferior {
+                flex-direction: column !important; align-items: stretch !important; justify-content: flex-start !important;
+                gap: 8px !important; background: #fffdf9 !important; border-radius: 26px 26px 0 0 !important;
+                padding: 10px 16px 14px !important; box-shadow: 0 -8px 24px rgba(90,61,38,.28) !important;
+            }
+            body.vista-repartidor #nav-barra-inferior::before {
+                content: ""; display: block; width: 42px; height: 5px; border-radius: 5px; background: #e1d3c0; margin: 0 auto 2px;
+            }
+            body.vista-repartidor #nav-barra-inferior > div:first-of-type { justify-content: space-between; gap: 0 !important; }
+            body.vista-repartidor #nav-barra-inferior > div:first-of-type > div { text-align: left !important; }
+            body.vista-repartidor #nav-barra-inferior > div:first-of-type > div > div:first-child { color: #5a3d26 !important; font-size: 17px !important; }
+            body.vista-repartidor #nav-inferior-btn-accion { display: none !important; }
+            body.vista-repartidor #app-cliente-card {
+                display: flex; gap: 10px; align-items: center; padding: 10px; border-radius: 16px; background: #f5ece3;
+            }
+            #app-cliente-num { width: 34px; height: 34px; border-radius: 50%; background: #5a3d26; color: #fff; display: grid; place-items: center; font-weight: 800; flex-shrink: 0; }
+            #app-cliente-nombre { font-weight: 700; font-size: 15px; color: #3b2a1c; }
+            #app-cliente-dir { font-size: 12px; color: #7a6350; }
+            body.vista-repartidor #app-acciones { display: flex; gap: 8px; }
+            #app-acciones a {
+                flex: 1; text-align: center; border-radius: 14px; padding: 10px 0; font-size: 12.5px; font-weight: 700;
+                background: #f5ece3; color: #5a3d26; text-decoration: none;
+            }
+            #app-acciones a.off { opacity: .4; pointer-events: none; }
+            body.vista-repartidor #app-btn-entregar {
+                display: block; border: none; border-radius: 16px; background: #5a3d26; color: #fff;
+                font-weight: 800; font-size: 15px; padding: 14px; width: 100%; cursor: pointer;
+            }
+            body.vista-repartidor .btn-salir-drawer { display: block; }
+            body.vista-repartidor #btn-reopt-circular { display: block; }
+            body.vista-repartidor #leyenda-rutas-barra, body.vista-repartidor .leyenda-rutas-mapa { display: none !important; }
+            body.vista-repartidor .route-section-title { background: #5a3d26 !important; color: #fff !important; border-radius: 12px; }
+            #app-tabbar button:focus, #app-tabbar button:focus-visible { outline: none; box-shadow: none; }
+        }
+        .btn-salir-drawer { display: none; width: 100%; margin-top: 16px; padding: 12px; border: none; border-radius: 12px; background: #D7B182; color: #3b2a1c; font-weight: 700; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -425,6 +522,12 @@
         <div class="gate-badge">Logística <b>TENATE</b> · El Tenate</div>
     </div>
 
+    <div id="app-tabbar">
+        <button id="tab-ruta" class="on" onclick="cambiarTabApp('ruta')"><span>🗺️</span>Ruta</button>
+        <button id="tab-clientes" onclick="cambiarTabApp('clientes')"><span>📋</span>Clientes</button>
+        <button id="tab-menu" onclick="cambiarTabApp('menu')"><span>☰</span>Menú</button>
+    </div>
+
     <div id="drawer-overlay-repartidor" onclick="cerrarDrawerRepartidor()"></div>
     <div id="drawer-repartidor">
         <div class="drawer-header-repartidor">
@@ -432,6 +535,7 @@
             <button class="btn-cerrar-drawer" onclick="cerrarDrawerRepartidor()">✕</button>
         </div>
         <div id="drawer-body-repartidor"></div>
+        <button class="btn-salir-drawer" onclick="cerrarDrawerRepartidor(); regresarAPantallaDeRoles()">🔄 Salir</button>
     </div>
 
     <div id="sidebar">
@@ -514,17 +618,24 @@
             <div style="width:34px; height:34px; border-radius:50%; background:#8e44ad; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
                 <span style="color:#fff; font-size:16px;">🧭</span>
             </div>
+            <img class="app-solo-movil app-logo-top header-logo" alt="">
             <div style="flex:1; min-width:0;">
+                <div id="app-ruta-titulo" class="app-solo-movil"></div>
                 <div id="nav-superior-nombre" style="font-weight:bold; font-size:14px; color:#2c3e50; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">—</div>
                 <div id="nav-superior-direccion" style="font-size:11px; color:#888; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">—</div>
             </div>
+            <div id="app-chip-progreso" class="app-solo-movil">0/0<small>entregados</small></div>
             <div id="nav-superior-eta-badge" style="background:#27ae60; color:#fff; font-weight:bold; font-size:13px; border-radius:12px; padding:4px 10px; flex-shrink:0;">—</div>
         </div>
+
+        <script>document.querySelectorAll(".header-logo").forEach(function(i){var g=document.querySelector(".gate-logo"); if(g) i.src=g.src;});</script>
+        <div id="app-barra-progreso" class="app-solo-movil"><i></i></div>
 
         <!-- Botones circulares flotantes -->
         <div id="nav-botones-circulares" style="display:none; flex-direction:column; gap:10px; position:absolute; right:12px; bottom:170px; z-index:1000;">
             <button id="btn-centrar-circular" onclick="activarSeguimientoCamara()" title="Centrar en mi ubicación" style="width:44px; height:44px; border-radius:50%; background:#fff; border:none; box-shadow:0 2px 8px rgba(0,0,0,0.3); font-size:18px; cursor:pointer;">📍</button>
             <button id="btn-ver-ruta-completa" onclick="verRutaCompleta()" title="Ver ruta completa" style="width:44px; height:44px; border-radius:50%; background:#fff; border:none; box-shadow:0 2px 8px rgba(0,0,0,0.3); font-size:18px; cursor:pointer;">🗺️</button>
+            <button id="btn-reopt-circular" class="app-solo-movil" onclick="reoptimizarRutaDesdeUbicacionActual()" title="Reoptimizar mi ruta" style="width:44px; height:44px; border-radius:50%; background:#fff; border:none; box-shadow:0 2px 8px rgba(0,0,0,0.3); font-size:18px; cursor:pointer;">🔄</button>
         </div>
 
         <div id="map"></div>
@@ -545,6 +656,16 @@
                     <div style="font-size:10px; color:#999;">Llegada</div>
                 </div>
             </div>
+            <div id="app-cliente-card" class="app-solo-movil" style="display:none;">
+                <div id="app-cliente-num">–</div>
+                <div style="min-width:0;"><div id="app-cliente-nombre">—</div><div id="app-cliente-dir">—</div></div>
+            </div>
+            <div id="app-acciones" class="app-solo-movil">
+                <a id="app-btn-llamar" href="#">📞 Llamar</a>
+                <a id="app-btn-whatsapp" href="#" target="_blank" rel="noopener">💬 WhatsApp</a>
+                <a id="app-btn-navegar" href="#" target="_blank" rel="noopener">🧭 Navegar</a>
+            </div>
+            <button id="app-btn-entregar" class="app-solo-movil" onclick="irAProximoClienteDesdeBarraNav()" style="display:none;">✓ Marcar entregado</button>
             <button id="nav-inferior-btn-accion" onclick="irAProximoClienteDesdeBarraNav()" style="width:46px; height:46px; border-radius:50%; background:#27ae60; border:none; box-shadow:0 2px 8px rgba(0,0,0,0.3); color:#fff; font-size:20px; cursor:pointer; flex-shrink:0;">📋</button>
         </div>
 
@@ -2582,6 +2703,15 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             document.getElementById('drawer-repartidor').classList.add('abierto');
         }
 
+        function cambiarTabApp(tab) {
+            document.body.classList.toggle("tab-clientes", tab === "clientes");
+            document.getElementById("tab-ruta").classList.toggle("on", tab !== "clientes");
+            document.getElementById("tab-clientes").classList.toggle("on", tab === "clientes");
+            if (tab === "menu") abrirDrawerRepartidor();
+            else cerrarDrawerRepartidor();
+            if (tab !== "clientes") setTimeout(() => { try { map.invalidateSize(); } catch (e) {} }, 50);
+        }
+
         function cerrarDrawerRepartidor() {
             document.getElementById('drawer-overlay-repartidor').style.display = 'none';
             document.getElementById('drawer-repartidor').classList.remove('abierto');
@@ -2654,6 +2784,13 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             const barra = document.getElementById('barra-progreso-entregas-fill');
             barra.style.width = porcentaje + '%';
             barra.style.background = (entregados >= total) ? '#27ae60' : '#3498db'; // verde al completar, azul mientras avanza
+
+            const chip = document.getElementById('app-chip-progreso');
+            if (chip) chip.innerHTML = `${entregados}/${total}<small>entregados</small>`;
+            const barraApp = document.querySelector('#app-barra-progreso i');
+            if (barraApp) barraApp.style.width = porcentaje + '%';
+            const tituloApp = document.getElementById('app-ruta-titulo');
+            if (tituloApp) tituloApp.textContent = `Ruta ${idxRuta + 1}` + (diaActivoFiltrado !== "todos" ? ` · ${diaActivoFiltrado}` : '');
         }
 
         // Cuando ya no hay clientes pendientes, se calcula el regreso real al depósito
@@ -2729,12 +2866,14 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             if (!cliente) {
                 nombreEl.textContent = "🎉 Sin clientes pendientes";
                 dirEl.textContent = "Ruta completada, regresamos al TENATE";
+                actualizarHojaClienteApp(null);
                 calcularYMostrarRegresoATenate();
                 return;
             }
 
             nombreEl.textContent = cliente.nombre || "Cliente";
             dirEl.textContent = cliente.direccion || "";
+            actualizarHojaClienteApp(cliente);
             const eta = llegadasEstimadasPorCliente[cliente.id];
             etaBadge.textContent = eta || "—";
             llegadaEl.textContent = eta || "—";
@@ -2749,6 +2888,39 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             } else {
                 distEl.textContent = "—";
             }
+        }
+
+        // Hoja inferior estilo app: cliente actual, llamar / WhatsApp / navegar y botón de entrega.
+        function actualizarHojaClienteApp(cliente) {
+            const card = document.getElementById("app-cliente-card");
+            if (!card) return;
+            const btnEntregar = document.getElementById("app-btn-entregar");
+            const acciones = document.getElementById("app-acciones");
+            if (!cliente) {
+                card.style.display = "none"; acciones.style.display = "none"; btnEntregar.style.display = "none";
+            } else {
+                card.style.display = ""; acciones.style.display = ""; btnEntregar.style.display = "";
+                document.getElementById("app-cliente-num").textContent = (cliente.cte !== undefined && cliente.cte !== null && cliente.cte !== "") ? cliente.cte : "•";
+                document.getElementById("app-cliente-nombre").textContent = cliente.nombre || "Cliente";
+                document.getElementById("app-cliente-dir").textContent = cliente.direccion || "";
+                const tel = (cliente.telefono || "").toString();
+                const llamar = document.getElementById("app-btn-llamar");
+                const wa = document.getElementById("app-btn-whatsapp");
+                const nav = document.getElementById("app-btn-navegar");
+                const digitos = tel.replace(/\D/g, "");
+                llamar.href = digitos ? "tel:" + tel : "#";
+                llamar.classList.toggle("off", !digitos);
+                const num = digitos.length === 10 ? "52" + digitos : digitos;
+                wa.href = digitos ? "https://api.whatsapp.com/send?phone=" + num + "&text=" + encodeURIComponent("¡Hola! 👋 Te saludamos de El Tenate. 🚛✨🧺\nTe informamos que acabamos de llegar a tu ubicación para tu entrega. 📍🙌\nEstamos afuera de tu domicilio, ¡quedamos atentos a tu salida! 🛎️😊\n¡Muchas gracias por tu preferencia!🤝😊") : "#";
+                wa.classList.toggle("off", !digitos);
+                const tieneCoords = cliente.lat !== null && cliente.lat !== undefined && cliente.lng !== null && cliente.lng !== undefined;
+                nav.href = tieneCoords ? obtenerEnlaceMaps(cliente.lat, cliente.lng) : "#";
+                nav.classList.toggle("off", !tieneCoords);
+            }
+            // Altura de la hoja → los botones flotantes y la atribución del mapa quedan por encima
+            const sheet = document.getElementById("nav-barra-inferior");
+            const wrapper = document.getElementById("map-wrapper");
+            if (sheet && wrapper) setTimeout(() => wrapper.style.setProperty("--sheet-h", sheet.offsetHeight + "px"), 0);
         }
 
         function irAProximoClienteDesdeBarraNav() {
@@ -3364,6 +3536,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             document.getElementById("role-gate-modal").style.display = "none";
             document.body.classList.remove("vista-admin", "vista-repartidor");
             document.body.classList.add(rol === "admin" ? "vista-admin" : "vista-repartidor");
+            document.body.classList.remove("tab-clientes");
 
             // Barras de navegación tipo Maps: solo para el repartidor
             const mostrarBarrasNav = rol === "repartidor";
