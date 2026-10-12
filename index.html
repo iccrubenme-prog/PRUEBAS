@@ -565,6 +565,102 @@
             body.vista-admin #sidebar { border-radius: 22px 22px 0 0; box-shadow: 0 -8px 24px rgba(90,61,38,.28); }
             body.vista-admin #sidebar::before { content: ""; display: block; width: 42px; height: 5px; border-radius: 5px; background: #e1d3c0; margin: 8px auto 0; flex-shrink: 0; }
         }
+
+        /* ===== Modo "app" para el administrador en celular ===== */
+        #adm-tabbar, #adm-top, #adm-sheet, .adm-solo-movil { display: none; }
+        @media (max-width: 768px) {
+            body.vista-admin { display: block; height: 100dvh; overflow: hidden; background: #f5ece3; }
+            body.vista-admin #map-wrapper { position: fixed; top: 0; left: 0; right: 0; bottom: 62px; width: auto; height: auto; }
+            body.vista-admin #map { height: 100%; }
+            body.vista-admin #sidebar {
+                display: none; position: fixed; left: 0; right: 0; top: 96px; bottom: 62px; width: auto; min-width: 0; max-height: none;
+                border-radius: 26px 26px 0 0; z-index: 1500; overflow: hidden; background: #fffdf9;
+            }
+            body.vista-admin[class*="adm-panel-"] #sidebar { display: flex; }
+            body.vista-admin.adm-panel-dividir #sidebar, body.vista-admin.adm-panel-mas #sidebar { top: auto; max-height: 82vh; }
+            body.vista-admin #sidebar .header { display: none; }
+            body.vista-admin #sidebar .content { padding-top: 6px; }
+            body.vista-admin #sidebar .panel-titulo { display: block; }
+
+            /* Qué se muestra en cada panel */
+            body.vista-admin.adm-panel-dividir #sidebar .content > :not(#bloque-control-rutas):not(.panel-titulo),
+            body.vista-admin.adm-panel-lista #sidebar .content > :not(#contenedor-de-rutas-lista):not(.panel-titulo) { display: none !important; }
+            body.vista-admin.adm-panel-dividir #lbl-filtro-vista, body.vista-admin.adm-panel-dividir #filtro-repartidor,
+            body.vista-admin.adm-panel-dividir #bloque-hora-salida, body.vista-admin.adm-panel-dividir #btn-reopt-individual,
+            body.vista-admin.adm-panel-dividir #contenedor-de-rutas-lista { display: none !important; }
+            body.vista-admin.adm-panel-mas #bloque-filtro-dia, body.vista-admin.adm-panel-mas #adm-bloque-optimizacion,
+            body.vista-admin.adm-panel-mas .bloque-filtro-clientes, body.vista-admin.adm-panel-mas #contenedor-de-rutas-lista,
+            body.vista-admin.adm-panel-mas #adm-btn-resumen, body.vista-admin.adm-panel-mas #btn-reopt-individual,
+            body.vista-admin.adm-panel-mas #lista-ubicaciones-repartidores { display: none !important; }
+            body.vista-admin.adm-panel-mas .control-rutas { background: transparent; border: none; padding: 0; }
+            body.vista-admin.adm-panel-dividir .control-rutas { background: transparent; border: none; padding: 0; }
+            body.vista-admin .adm-solo-movil.panel-titulo { font-size: 18px; font-weight: 800; color: #5a3d26; margin: 4px 0 10px; }
+            body.vista-admin.adm-panel-mas .adm-salir { display: block; }
+            .adm-salir { width: 100%; margin-top: 4px; padding: 12px; border: 2px solid #D7B182; background: #fffdf9; color: #5a3d26; font-weight: 800; border-radius: 14px; cursor: pointer; }
+
+            /* Barra inferior */
+            body.vista-admin #adm-tabbar {
+                display: flex; align-items: flex-start; position: fixed; left: 0; right: 0; bottom: 0; height: 62px; z-index: 3000;
+                background: #fff; border-top: 1px solid #eadfcf; padding-bottom: env(safe-area-inset-bottom);
+            }
+            #adm-tabbar button { flex: 1; background: none; border: none; box-shadow: none; border-radius: 0; color: #a07a4e; font-size: 10.5px; padding: 9px 0 0; cursor: pointer; outline: none; transform: none !important; }
+            #adm-tabbar button span { display: block; font-size: 20px; line-height: 1.2; }
+            #adm-tabbar button.on { color: #5a3d26; font-weight: 800; }
+            #adm-tabbar button.main { margin-top: -18px; padding-top: 0; }
+            #adm-tabbar button.main span { width: 52px; height: 52px; border-radius: 50%; background: #5a3d26; display: grid; place-items: center; margin: 0 auto 2px; box-shadow: 0 6px 14px rgba(90,61,38,.45); font-size: 22px; color: #fff; }
+            #adm-tabbar button.main.on span { background: #3b2a1c; }
+
+
+            #adm-tabbar button, #adm-sheet .vermas { background: transparent !important; box-shadow: none !important; }
+            body.vista-admin.adm-panel-mas #sidebar .content { display: flex; flex-direction: column; }
+            body.vista-admin.adm-panel-mas #sidebar .content > * { order: 5; }
+            body.vista-admin.adm-panel-mas #sidebar .content > #adm-panel-titulo { order: 0; }
+            body.vista-admin.adm-panel-mas #sidebar .content > #adm-btn-sync { order: 1; }
+            body.vista-admin.adm-panel-mas #sidebar .content > #adm-btn-cierre { order: 2; }
+            body.vista-admin.adm-panel-mas #sidebar .content > #bloque-control-rutas { order: 3; }
+            body.vista-admin.adm-panel-mas #sidebar .content > #adm-btn-depot { order: 4; }
+            body.vista-admin.adm-panel-mas #sidebar .content > #adm-btn-limpiar-registros { order: 6; }
+            body.vista-admin.adm-panel-mas #sidebar .content > .adm-salir { order: 7; }
+
+            /* Tarjeta superior */
+            body.vista-admin #adm-top {
+                display: flex; position: absolute; top: 12px; left: 12px; right: 12px; z-index: 1000; align-items: center; gap: 10px;
+                background: #fffdf9; border-radius: 20px; padding: 10px 12px; box-shadow: 0 6px 18px rgba(90,61,38,.28);
+            }
+            #adm-top img { width: 34px; height: 34px; flex-shrink: 0; }
+            #adm-top .t { flex: 1; min-width: 0; line-height: 1.15; }
+            #adm-top .t b { display: block; font-size: 17px; color: #5a3d26; }
+            #adm-top .t small { display: block; color: #a07a4e; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            #adm-chip-dia { position: relative; background: #f5ece3; border-radius: 14px; padding: 7px 10px; font-weight: 700; color: #5a3d26; font-size: 12.5px; white-space: nowrap; max-width: 130px; overflow: hidden; text-overflow: ellipsis; }
+            #adm-chip-dia select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; font-size: 16px; }
+
+            /* Leyenda de rutas como pastillas bajo la tarjeta */
+            body.vista-admin #leyenda-rutas-barra {
+                position: absolute !important; top: 82px !important; left: 12px !important; right: 12px !important; z-index: 600;
+                max-height: none !important; overflow-x: auto !important; overflow-y: hidden !important; flex-wrap: nowrap !important;
+                background: transparent !important; box-shadow: none !important; border: none !important; padding: 0 !important; gap: 6px !important;
+            }
+            body.vista-admin #leyenda-rutas-barra > * { flex-shrink: 0; background: #fffdf9; border-radius: 999px; padding: 5px 10px; box-shadow: 0 2px 6px rgba(0,0,0,.2); font-size: 11.5px; }
+            body.vista-admin .leaflet-top.leaflet-left { top: 118px; }
+            body.vista-admin .leaflet-control-zoom { display: none; }
+            body.vista-admin .leaflet-bottom { bottom: var(--adm-sheet-h, 150px); }
+
+            /* Hoja inferior con resumen */
+            body.vista-admin #adm-sheet {
+                display: block; position: absolute; left: 0; right: 0; bottom: 0; z-index: 1000; background: #fffdf9;
+                border-radius: 26px 26px 0 0; padding: 10px 16px 12px; box-shadow: 0 -8px 24px rgba(90,61,38,.28); max-height: 42vh; overflow-y: auto;
+            }
+            body.vista-admin[class*="adm-panel-"] #adm-sheet { display: none; }
+            #adm-sheet .grab { width: 42px; height: 5px; border-radius: 5px; background: #e1d3c0; margin: 0 auto 10px; }
+            #adm-sheet .stat { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 11.5px; color: #a07a4e; }
+            #adm-sheet .stat b { display: block; font-size: 17px; color: #5a3d26; }
+            #adm-sheet .row { display: flex; gap: 10px; align-items: center; padding: 9px 10px; border-radius: 14px; background: #f5ece3; margin-bottom: 6px; }
+            #adm-sheet .dot { width: 10px; height: 34px; border-radius: 6px; flex-shrink: 0; }
+            #adm-sheet .row b { font-size: 14px; display: block; color: #3b2a1c; }
+            #adm-sheet .row small { color: #8a7560; font-size: 11.5px; }
+            #adm-sheet .row em { margin-left: auto; font-style: normal; font-weight: 800; color: #5a3d26; font-size: 13px; text-align: right; }
+            #adm-sheet .vermas { width: 100%; background: none; border: none; box-shadow: none; color: #8a5a2b; font-weight: 700; font-size: 12.5px; padding: 6px 0 0; cursor: pointer; }
+        }
     </style>
 </head>
 <body>
@@ -593,6 +689,13 @@
         <button id="tab-ruta" class="on" onclick="cambiarTabApp('ruta')"><span>🗺️</span>Ruta</button>
         <button id="tab-clientes" onclick="cambiarTabApp('clientes')"><span>📋</span>Clientes</button>
         <button id="tab-menu" onclick="cambiarTabApp('menu')"><span>☰</span>Menú</button>
+    </div>
+
+    <div id="adm-tabbar">
+        <button id="atab-mapa" class="on" onclick="cambiarTabAdmin('mapa')"><span>🗺️</span>Mapa</button>
+        <button id="atab-dividir" class="main" onclick="cambiarTabAdmin('dividir')"><span>✂️</span>Dividir</button>
+        <button id="atab-resumen" onclick="cambiarTabAdmin('resumen')"><span>📊</span>Resumen</button>
+        <button id="atab-mas" onclick="cambiarTabAdmin('mas')"><span>⋯</span>Más</button>
     </div>
 
     <div id="drawer-overlay-repartidor" onclick="cerrarDrawerRepartidor()"></div>
@@ -625,6 +728,7 @@
         </div>
 
         <div class="content">
+            <div id="adm-panel-titulo" class="adm-solo-movil panel-titulo"></div>
             <button id="adm-btn-depot" class="btn-depot-config" onclick="configurarDepositoManual()">⚙️ Ubicación TENATE</button>
             <button id="adm-btn-sync" class="btn-sync" onclick="importarDatosDesdeSheetsConReintentos()">🔄 Sincronizar Google Sheets</button>
             <button id="adm-btn-limpiar-registros" class="btn-limpiar-registros" style="display:none;" onclick="confirmarLimpiarRegistrosPedidos()">🗑️ Limpiar Estado / Pago / Ruta / Notas</button>
@@ -674,11 +778,26 @@
             </div>
             
             <div id="contenedor-de-rutas-lista"></div>
+            <button class="adm-salir adm-solo-movil" onclick="regresarAPantallaDeRoles()">🚪 Salir</button>
         </div>
     </div>
 
     <div id="map-wrapper">
         <div id="leyenda-rutas-barra"></div>
+
+        <div id="adm-top">
+            <img class="header-logo" alt="">
+            <div class="t"><b>Panel Admin</b><small id="adm-top-sub">—</small></div>
+            <label id="adm-chip-dia">📅 <span id="adm-dia-txt">Todos</span> ▾<select id="adm-dia-select" onchange="aplicarFiltroDia(this.value); sincronizarChipDiaAdmin();"></select></label>
+        </div>
+        <script>document.querySelectorAll(".header-logo").forEach(function(i){var g=document.querySelector(".gate-logo"); if(g) i.src=g.src;});</script>
+        <div id="adm-sheet">
+            <div class="grab"></div>
+            <div class="stat"><div>Entregados<b id="adm-st-ent">0/0</b></div><div>En vivo<b id="adm-st-vivo">0</b></div><div>Cobro total<b id="adm-st-cobro">$0</b></div></div>
+            <div id="adm-sheet-rutas"></div>
+            <button class="vermas" onclick="cambiarTabAdmin('lista')">Ver lista de clientes ▸</button>
+        </div>
+
 
         <!-- Barra superior tipo navegación: próximo destino -->
         <div id="nav-barra-superior" style="display:none; position:absolute; top:10px; left:50%; transform:translateX(-50%); z-index:1000; background:#fff; border-radius:16px; box-shadow:0 3px 12px rgba(0,0,0,0.3); padding:10px 16px; align-items:center; gap:10px; max-width:92%; width:420px;">
@@ -2791,6 +2910,72 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             if (tab !== "clientes") setTimeout(() => { try { map.invalidateSize(); } catch (e) {} }, 50);
         }
 
+
+        // ===== Vista administrador tipo app (celular) =====
+        function cambiarTabAdmin(tab) {
+            const b = document.body;
+            b.classList.remove("adm-panel-dividir", "adm-panel-mas", "adm-panel-lista");
+            const titulo = document.getElementById("adm-panel-titulo");
+            let activa = "mapa";
+            if (tab === "dividir") { b.classList.add("adm-panel-dividir"); titulo.textContent = "✂️ Dividir y optimizar rutas"; activa = "dividir"; }
+            else if (tab === "mas") { b.classList.add("adm-panel-mas"); titulo.textContent = "Más opciones"; activa = "mas"; }
+            else if (tab === "lista") { b.classList.add("adm-panel-lista"); titulo.textContent = "Clientes por ruta"; activa = "mapa"; }
+            else if (tab === "resumen") { mostrarResumenRutas(); }
+            ["mapa", "dividir", "resumen", "mas"].forEach(t => {
+                const el = document.getElementById("atab-" + t);
+                if (el) el.classList.toggle("on", t === activa);
+            });
+            if (tab === "mapa") setTimeout(() => { try { map.invalidateSize(); } catch (e) {} }, 60);
+            actualizarHojaAdmin();
+        }
+
+        function sincronizarChipDiaAdmin() {
+            const origen = document.getElementById("filtro-dia");
+            const sel = document.getElementById("adm-dia-select");
+            const txt = document.getElementById("adm-dia-txt");
+            if (!origen || !sel || !txt) return;
+            const firma = [...origen.options].map(o => o.value).join("|");
+            if (sel.dataset.firma !== firma) {
+                sel.innerHTML = [...origen.options].map(o => `<option value="${o.value}">${o.text}</option>`).join("");
+                sel.dataset.firma = firma;
+            }
+            sel.value = origen.value;
+            const op = origen.options[origen.selectedIndex];
+            txt.textContent = (origen.value === "todos") ? "Todos los días" : (op ? op.text.replace(/^[^\wÁÉÍÓÚÑáéíóúñ]+/, "") : origen.value);
+        }
+
+        function actualizarHojaAdmin() {
+            if (ROL_ACTUAL !== "admin") return;
+            const sheet = document.getElementById("adm-sheet");
+            if (!sheet) return;
+            sincronizarChipDiaAdmin();
+            const delDia = c => diaActivoFiltrado === "todos" || c.dia === diaActivoFiltrado;
+            const nombres = construirMapaNombresPorRuta();
+            let totalCli = 0, totalEnt = 0, totalCobro = 0, filas = "", rutasConClientes = 0;
+            rutasEstructuradas.forEach((lista, idx) => {
+                const cli = (lista || []).filter(p => p.id !== 0 && delDia(p));
+                if (cli.length === 0) return;
+                rutasConClientes++;
+                const ent = cli.filter(p => p.entregado).length;
+                const cobro = cli.reduce((a, p) => a + (parseFloat(p.monto) || 0), 0);
+                totalCli += cli.length; totalEnt += ent; totalCobro += cobro;
+                const t = tiemposEstimadosRutas[idx] || "";
+                const m = t.match(/Total Recorrido:\s*(.+)$/);
+                const nombre = nombres[idx] ? ` · ${nombres[idx]}` : "";
+                filas += `<div class="row"><div class="dot" style="background:${obtenerColorRuta(idx)}"></div><div><b>Ruta ${idx + 1}${nombre}</b><small>${cli.length} clientes · ${ent} entregados</small></div><em>$${cobro.toLocaleString('es-MX', {maximumFractionDigits: 0})}${m ? `<br><small style="font-weight:400">⏱ ${m[1]}</small>` : ""}</em></div>`;
+            });
+            document.getElementById("adm-sheet-rutas").innerHTML = filas || '<div style="color:#8a7560;font-size:13px;padding:6px 2px;">Aún no hay rutas. Usa <b>Dividir</b> para crearlas.</div>';
+            document.getElementById("adm-st-ent").textContent = `${totalEnt}/${totalCli}`;
+            document.getElementById("adm-st-cobro").textContent = "$" + totalCobro.toLocaleString('es-MX', {maximumFractionDigits: 0});
+            const vivo = document.querySelectorAll("#lista-ubicaciones-repartidores-items > *").length;
+            document.getElementById("adm-st-vivo").textContent = vivo;
+            const sub = document.getElementById("adm-top-sub");
+            if (sub) sub.textContent = `${rutasConClientes} rutas · ${totalCli} clientes`;
+            const wrapper = document.getElementById("map-wrapper");
+            if (wrapper) wrapper.style.setProperty("--adm-sheet-h", (document.body.className.indexOf("adm-panel-") >= 0 ? 0 : sheet.offsetHeight) + "px");
+        }
+        setInterval(() => { if (ROL_ACTUAL === "admin") actualizarHojaAdmin(); }, 2000);
+
         function cerrarDrawerRepartidor() {
             document.getElementById('drawer-overlay-repartidor').style.display = 'none';
             document.getElementById('drawer-repartidor').classList.remove('abierto');
@@ -3623,7 +3808,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             document.getElementById("role-gate-modal").style.display = "none";
             document.body.classList.remove("vista-admin", "vista-repartidor");
             document.body.classList.add(rol === "admin" ? "vista-admin" : "vista-repartidor");
-            document.body.classList.remove("tab-clientes");
+            document.body.classList.remove("tab-clientes", "adm-panel-dividir", "adm-panel-mas", "adm-panel-lista");
 
             // Barras de navegación tipo Maps: solo para el repartidor
             const mostrarBarrasNav = rol === "repartidor";
