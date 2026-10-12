@@ -366,6 +366,16 @@
         .modal-btn { background: #2ecc71; color: white; border: none; padding: 10px 20px; font-weight: bold; border-radius: 5px; cursor: pointer; width: 100%; }
         .modal-btn:disabled { background: #95a5a6; cursor: not-allowed; }
         .modal-btn-cancel { background: #7f8c8d; margin-top: 8px; }
+        /* Paleta TENATE para la ventana de entrega (el botón Confirmar conserva su verde) */
+        #payment-modal { background: rgba(59,42,28,.55) !important; }
+        #payment-modal .modal-content { background: #fffdf9; border: 1px solid #f0e6d8; border-top: 6px solid #D7B182; border-radius: 22px; padding: 24px 22px 20px; width: min(320px, 88vw); box-shadow: 0 12px 40px rgba(59,42,28,.35); }
+        #payment-modal h3 { color: #3b2a1c; font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+        #payment-modal #modal-cliente-monto { display: inline-block; margin: 4px 0 14px; padding: 5px 14px; border-radius: 999px; background: #f5ece3; color: #5a3d26; font-weight: 800; }
+        #payment-modal label { color: #5a3d26; font-size: 13px; font-weight: 700; display: block; text-align: left; }
+        #payment-modal select { background: #f5ece3; color: #3b2a1c; border: 1px solid #e6d6bf; border-radius: 12px; padding: 12px; margin: 8px 0 16px; }
+        #payment-modal .modal-btn { border-radius: 14px; padding: 13px 20px; font-size: 15px; }
+        #payment-modal .modal-btn:disabled { background: #cbbfae; color: #fff; }
+        #payment-modal .modal-btn-cancel { background: #f1e4d0 !important; color: #6b4a22 !important; margin-top: 10px; }
 
         #role-gate-modal {
             position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh;
