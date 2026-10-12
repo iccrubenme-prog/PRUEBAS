@@ -754,6 +754,15 @@
             #adm-detalle .est.ok { background: #e7f3e4; color: #2f7a3c; }
             #adm-detalle .est.pen { background: #f5ece3; color: #8a5a2b; }
             #adm-detalle .cli.done b { text-decoration: line-through; color: #a89a88; }
+            #adm-detalle .verMapa.sec { background: #f1e4d0; color: #6b4a22; }
+            #adm-detalle .verMapa.on { background: #D7B182; color: #3b2a1c; }
+            #adm-detalle .reord-ayuda { font-size: 12.5px; color: #8a7560; background: #faf4ea; border-radius: 12px; padding: 9px 12px; margin: -4px 0 12px; line-height: 1.35; }
+            #adm-detalle .cli.mov { cursor: default; }
+            #adm-detalle .cli .eta { font-weight: 800; font-size: 14px; color: #5a3d26; background: #f1e4d0; border-radius: 10px; padding: 5px 8px; flex-shrink: 0; min-width: 52px; text-align: center; }
+            #adm-detalle .cli .mv { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+            #adm-detalle .cli .mv button { width: 40px; height: 32px; border: none; border-radius: 10px; background: #5a3d26 !important; color: #fff; font-size: 15px; cursor: pointer; box-shadow: none !important; padding: 0; }
+            #adm-detalle .cli .mv button:disabled { background: #e6d9c6 !important; color: #b9a98f; cursor: default; }
+            #adm-detalle .cli.movido { background: #fff3d6; border-color: #D7B182; transition: background .6s; }
             #adm-detalle .verMapa { width: 100%; margin-bottom: 12px; padding: 12px; border: none; border-radius: 14px; background: #5a3d26; color: #fff; font-weight: 800; font-size: 14px; cursor: pointer; }
             #adm-detalle .vacio { text-align: center; color: #8a7560; padding: 28px 12px; font-size: 14px; line-height: 1.4; }
             #adm-detalle .estado { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #2f7a3c; font-weight: 600; }
@@ -1417,6 +1426,8 @@
                 .then(res => res.json())
                 .then(datosNube => {
                     if (datosNube.error) return;
+                    // Justo después de reacomodar paradas (admin) se espera a que Sheets reciba el nuevo orden
+                    if (window.admOrdenBloqueoHasta && Date.now() < window.admOrdenBloqueoHasta) return;
 
                     let huboCambiosEstatus = false;
                     let huboCambiosOrden   = false;
@@ -3096,7 +3107,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
         function cambiarTabAdmin(tab) {
             const b = document.body;
             b.classList.remove("adm-panel-dividir", "adm-panel-mas", "adm-panel-lista", "adm-panel-detalle");
-            admDetalle = null;
+            admDetalle = null; admReordenar = false; admUltimoMovido = null;
             const titulo = document.getElementById("adm-panel-titulo");
             let activa = "mapa";
             if (tab === "dividir") { b.classList.add("adm-panel-dividir"); titulo.textContent = "✂️ Dividir y optimizar rutas"; activa = "dividir"; }
@@ -3211,6 +3222,49 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             setTimeout(() => { verTodoMapaAdmin(); }, 200);
         }
 
+        // ── Reacomodo manual de paradas (solo administrador) ─────────────────────
+        let admReordenar = false, admUltimoMovido = null, _admTimerTrazo = null;
+        function admToggleReordenar() { admReordenar = !admReordenar; admUltimoMovido = null; renderDetalleAdmin(); }
+
+        function admMoverCliente(idxRuta, id, dir) {
+            if (ROL_ACTUAL !== "admin") return;
+            const ruta = rutasEstructuradas[idxRuta];
+            if (!ruta) return;
+            const visible = p => p.id !== 0 && !p.entregado && (diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado);
+            const pos = ruta.findIndex(p => String(p.id) === String(id));
+            if (pos < 0) return;
+            // vecino pendiente más cercano en esa dirección (se saltan entregados, depósito y otros días)
+            let k = pos + dir;
+            while (k >= 0 && k < ruta.length && !visible(ruta[k])) k += dir;
+            if (k < 0 || k >= ruta.length) return;
+            const [cl] = ruta.splice(pos, 1);
+            ruta.splice(k, 0, cl);
+
+            // Renumerar #Cte según el nuevo orden (misma lógica que al marcar una entrega) y guardar
+            let orden = 0; const asignaciones = [];
+            ruta.forEach(p => {
+                if (p.id === 0) return;
+                orden++; p.cte = orden;
+                const real = clientes.find(c => String(c.id) === String(p.id));
+                if (real) real.cte = orden;
+                asignaciones.push({ id: p.id, nombre: p.nombre, ruta: `Ruta ${idxRuta + 1}`, cte: p.cte });
+            });
+            window.admOrdenBloqueoHasta = Date.now() + 9000;
+            fetch(URL_GOOGLE_SCRIPT, {
+                method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ accion: "guardar_rutas_masivo", asignaciones })
+            }).catch(() => {});
+
+            admUltimoMovido = id;
+            renderDetalleAdmin();
+            const fila = document.querySelector(`#adm-det-cuerpo .cli[data-cid="${id}"]`);
+            if (fila && fila.scrollIntoView) fila.scrollIntoView({ block: "nearest" });
+            refrescarMapaYListasVisuales();
+            // Se recalculan línea y horas de llegada con el nuevo orden (con una pequeña espera para no saturar OSRM)
+            clearTimeout(_admTimerTrazo);
+            _admTimerTrazo = setTimeout(() => { if (rutasOptimizadasActivas) trazarLineasYCalcularTiemposOSRM(); }, 500);
+        }
+
         function renderDetalleAdmin() {
             const cuerpo = document.getElementById("adm-det-cuerpo");
             const titulo = document.getElementById("adm-det-titulo");
@@ -3236,14 +3290,28 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                 html += `<button class="verMapa" onclick="verRutaEnMapaAdmin(${idx})">🗺️ Ver esta ruta en el mapa</button>`;
                 if (conx) html += `<button class="verMapa" style="background:#D7B182;color:#3b2a1c" onclick="enfocarEnMapaAdmin(${conx.lat}, ${conx.lng})">📍 Ir al repartidor</button>`;
                 if (cli.length === 0) html += '<div class="vacio">Esta ruta no tiene clientes con el filtro actual.</div>';
+                if (cli.some(c => !c.entregado)) {
+                    html += `<button class="verMapa sec ${admReordenar ? "on" : ""}" onclick="admToggleReordenar()">${admReordenar ? "✓ Listo, terminar de reacomodar" : "↕ Reacomodar paradas"}</button>`;
+                    if (admReordenar) html += '<div class="reord-ayuda">Sube o baja a cada cliente con las flechas hasta que su <b>hora de llegada</b> quede cerca de la que pidió. Las horas y la ruta se recalculan con cada movimiento.</div>';
+                }
+                const movibles = cli.filter(c => !c.entregado);
                 html += cli.map(c => {
                     const eta = llegadasEstimadasPorCliente[c.id];
-                    const sub = [c.direccion, (!c.entregado && eta) ? "Llegada " + eta : ""].filter(Boolean).join(" · ");
+                    const sub = [c.direccion, (!admReordenar && !c.entregado && eta) ? "Llegada " + eta : ""].filter(Boolean).join(" · ");
                     const lat = (c.lat !== null && c.lat !== undefined) ? c.lat : "null";
                     const lng = (c.lng !== null && c.lng !== undefined) ? c.lng : "null";
+                    const pk = c.pedido ? `<span class="pkg">📦 ${escAdm(c.pedido)}</span>` : "";
+                    if (admReordenar) {
+                        const pos = movibles.indexOf(c);
+                        const mv = c.entregado ? `<span class="est ok">✓ Entregado</span>` : `<div class="mv"><button aria-label="Subir" ${pos <= 0 ? "disabled" : ""} onclick="admMoverCliente(${idx}, '${c.id}', -1)">▲</button><button aria-label="Bajar" ${pos === movibles.length - 1 ? "disabled" : ""} onclick="admMoverCliente(${idx}, '${c.id}', 1)">▼</button></div>`;
+                        return `<div class="cli mov ${c.entregado ? "done" : ""} ${String(admUltimoMovido) === String(c.id) ? "movido" : ""}" data-cid="${c.id}">
+                            <div class="num" style="background:${color}">${escAdm(c.cte ?? "•")}</div>
+                            <div class="tx"><b>${escAdm(c.nombre)}${pk}</b><small>${escAdm(sub)}</small></div>
+                            ${(!c.entregado) ? `<span class="eta" title="Hora estimada de llegada">${eta ? escAdm(eta) : "—"}</span>` : ""}${mv}</div>`;
+                    }
                     return `<div class="cli ${c.entregado ? "done" : ""}" role="button" tabindex="0" onclick="enfocarEnMapaAdmin(${lat}, ${lng})">
                         <div class="num" style="background:${color}">${escAdm(c.cte ?? "•")}</div>
-                        <div class="tx"><b>${escAdm(c.nombre)}${c.pedido ? `<span class="pkg">📦 ${escAdm(c.pedido)}</span>` : ""}</b><small>${escAdm(sub)}</small></div>
+                        <div class="tx"><b>${escAdm(c.nombre)}${pk}</b><small>${escAdm(sub)}</small></div>
                         <span class="est ${c.entregado ? "ok" : "pen"}">${c.entregado ? "✓ Entregado" : "Pendiente"}</span></div>`;
                 }).join("");
                 cuerpo.innerHTML = html;
