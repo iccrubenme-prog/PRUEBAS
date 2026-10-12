@@ -707,6 +707,13 @@
         .vivo-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #2ecc71; box-shadow: 0 0 0 3px rgba(46,204,113,.25); margin-left: 7px; vertical-align: middle; flex-shrink: 0; }
         .vivo-dot.viejo { background: #e6a23c; box-shadow: 0 0 0 3px rgba(230,162,60,.25); }
         #adm-fab { display: none; }
+        #adm-pill { display: none; }
+        @media (max-width: 768px) {
+            body.vista-admin #adm-pill.on { display: flex; align-items: center; gap: 8px; position: absolute; left: 50%; transform: translateX(-50%); top: 118px; z-index: 1000; background: #fffdf9; color: #3b2a1c; border: 1.5px solid #D7B182; border-radius: 999px; padding: 5px 6px 5px 12px; font-size: 13px; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,.25); max-width: calc(100vw - 32px); white-space: nowrap; }
+            body.vista-admin[class*="adm-panel-"] #adm-pill { display: none !important; }
+            #adm-pill i { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+            #adm-pill button { background: #f1e4d0 !important; border: none; box-shadow: none !important; border-radius: 999px; padding: 6px 11px; font-size: 12px; font-weight: 700; color: #6b4a22; cursor: pointer; }
+        }
         @media (max-width: 768px) {
             body.vista-admin #adm-fab {
                 display: flex; flex-direction: column; gap: 10px; position: absolute; right: 12px; z-index: 1000;
@@ -851,6 +858,7 @@
             <label id="adm-chip-dia">📅 <span id="adm-dia-txt">Todos</span> ▾<select id="adm-dia-select" onchange="aplicarFiltroDia(this.value); sincronizarChipDiaAdmin();"></select></label>
         </div>
         <script>document.querySelectorAll(".header-logo").forEach(function(i){var g=document.querySelector(".gate-logo"); if(g) i.src=g.src;});</script>
+        <div id="adm-pill"><i></i><span id="adm-pill-txt"></span><button onclick="verTodasRutasAdmin()" aria-label="Quitar filtro y ver todas las rutas">✕ Ver todas</button></div>
         <div id="adm-fab"><button onclick="verTodoMapaAdmin()" title="Ver todo el mapa" aria-label="Ver todo el mapa">🗺️</button></div>
         <div id="adm-sheet">
             <div class="grab"></div>
@@ -3024,11 +3032,36 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             setTimeout(() => { try { map.invalidateSize(); map.setView([lat, lng], 17, { animate: true }); } catch (e) {} }, 120);
         }
 
+        function actualizarPillFiltroAdmin() {
+            const pill = document.getElementById("adm-pill");
+            if (!pill) return;
+            const activa = ROL_ACTUAL === "admin" && rutaActivaFiltrada !== "todas";
+            pill.classList.toggle("on", activa);
+            if (!activa) return;
+            const idx = parseInt(rutaActivaFiltrada);
+            const nom = construirMapaNombresPorRuta()[idx];
+            document.getElementById("adm-pill-txt").textContent = "Solo Ruta " + (idx + 1) + (nom ? " · " + nom : "");
+            pill.querySelector("i").style.background = obtenerColorRuta(idx);
+        }
+
+        // Filtra el mapa a una sola ruta (igual que "Modo Vista Repartidor") y la encuadra
         function verRutaEnMapaAdmin(idx) {
-            const pts = ((rutasEstructuradas[idx] || []).filter(p => p.id !== 0 && p.lat !== null && p.lng !== null && (diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado))).map(p => [p.lat, p.lng]);
-            pts.push([deposito.lat, deposito.lng]);
+            const sel = document.getElementById("filtro-repartidor");
+            if (sel) sel.value = String(idx);
+            aplicarFiltroDeRutaMapeada(String(idx));
+            actualizarPillFiltroAdmin();
+            consultarUbicacionesRepartidores();
             cambiarTabAdmin('mapa');
-            setTimeout(() => { try { map.invalidateSize(); map.fitBounds(pts, { paddingTopLeft: [28, 130], paddingBottomRight: [28, 170] }); } catch (e) {} }, 150);
+            setTimeout(() => { verTodoMapaAdmin(); }, 200);
+        }
+
+        function verTodasRutasAdmin() {
+            const sel = document.getElementById("filtro-repartidor");
+            if (sel) sel.value = "todas";
+            aplicarFiltroDeRutaMapeada("todas");
+            actualizarPillFiltroAdmin();
+            consultarUbicacionesRepartidores();
+            setTimeout(() => { verTodoMapaAdmin(); }, 200);
         }
 
         function renderDetalleAdmin() {
@@ -3109,7 +3142,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                     if (p.id !== 0 && p.lat !== null && p.lng !== null && (diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado)) pts.push([p.lat, p.lng]);
                 });
             });
-            (repartidoresEnVivoAdmin || []).forEach(r => pts.push([r.lat, r.lng]));
+            (repartidoresEnVivoAdmin || []).forEach(r => { if (rutaActivaFiltrada === "todas" || parseInt(rutaActivaFiltrada) === r.idx) pts.push([r.lat, r.lng]); });
             if (pts.length < 2) { try { map.setView([deposito.lat, deposito.lng], 13); } catch (e) {} return; }
             const hoja = (document.getElementById("adm-sheet") || {}).offsetHeight || 150;
             try { map.invalidateSize(); map.fitBounds(pts, { paddingTopLeft: [28, 140], paddingBottomRight: [28, hoja + 24], maxZoom: 17 }); } catch (e) {}
@@ -3120,6 +3153,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             const sheet = document.getElementById("adm-sheet");
             if (!sheet) return;
             sincronizarChipDiaAdmin();
+            actualizarPillFiltroAdmin();
             const delDia = c => diaActivoFiltrado === "todos" || c.dia === diaActivoFiltrado;
             const nombres = construirMapaNombresPorRuta();
             let totalCli = 0, totalEnt = 0, totalCobro = 0, filas = "", rutasConClientes = 0;
