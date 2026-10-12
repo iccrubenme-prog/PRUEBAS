@@ -3286,7 +3286,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             const barraApp = document.querySelector('#app-barra-progreso i');
             if (barraApp) barraApp.style.width = porcentaje + '%';
             const tituloApp = document.getElementById('app-ruta-titulo');
-            if (tituloApp) tituloApp.textContent = `Ruta ${idxRuta + 1}`;
+            if (tituloApp) { const nomR = construirMapaNombresPorRuta()[idxRuta]; tituloApp.textContent = `Ruta ${idxRuta + 1}${nomR ? " · " + nomR : ""}`; }
             const subApp = document.getElementById('app-ruta-sub');
             if (subApp) {
                 const pend = total - entregados;
@@ -4105,7 +4105,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                     reconstruirRutasEstructuradasDesdeClientes();
                 }
 
-                subtitulo.innerText = `Vista Repartidor - Ruta ${parseInt(rutaSeleccionada) + 1}`;
+                { const nomR = construirMapaNombresPorRuta()[parseInt(rutaSeleccionada)]; subtitulo.innerText = `Vista Repartidor - Ruta ${parseInt(rutaSeleccionada) + 1}${nomR ? " · " + nomR : ""}`; }
                 btnSync.style.display = "none";
                 btnDepot.style.display = "none";
                 btnLimpiar.style.display = "none";
