@@ -619,9 +619,6 @@
             #adm-tabbar button { flex: 1; background: none; border: none; box-shadow: none; border-radius: 0; color: #a07a4e; font-size: 10.5px; padding: 9px 0 0; cursor: pointer; outline: none; transform: none !important; }
             #adm-tabbar button span { display: block; font-size: 20px; line-height: 1.2; }
             #adm-tabbar button.on { color: #5a3d26; font-weight: 800; }
-            #adm-tabbar button.main { margin-top: -18px; padding-top: 0; }
-            #adm-tabbar button.main span { width: 52px; height: 52px; border-radius: 50%; background: #5a3d26; display: grid; place-items: center; margin: 0 auto 2px; box-shadow: 0 6px 14px rgba(90,61,38,.45); font-size: 22px; color: #fff; }
-            #adm-tabbar button.main.on span { background: #3b2a1c; }
 
 
             #adm-tabbar button, #adm-sheet .vermas { background: transparent !important; box-shadow: none !important; }
@@ -774,7 +771,7 @@
 
     <div id="adm-tabbar">
         <button id="atab-mapa" class="on" onclick="cambiarTabAdmin('mapa')"><span>🗺️</span>Mapa</button>
-        <button id="atab-dividir" class="main" onclick="cambiarTabAdmin('dividir')"><span>✂️</span>Dividir</button>
+        <button id="atab-dividir" onclick="cambiarTabAdmin('dividir')"><span>✂️</span>Dividir</button>
         <button id="atab-resumen" onclick="cambiarTabAdmin('resumen')"><span>📊</span>Resumen</button>
         <button id="atab-mas" onclick="cambiarTabAdmin('mas')"><span>⋯</span>Más</button>
     </div>
