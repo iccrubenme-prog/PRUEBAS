@@ -515,6 +515,56 @@
         }
         .btn-salir-drawer { background: #fffdf9 !important; color: #5a3d26 !important; border: 2px solid #D7B182 !important; border-radius: 14px !important; font-weight: 800 !important; }
         #drawer-overlay-repartidor { background: rgba(59,42,28,.45) !important; }
+
+        /* ===== Vista administrador: misma paleta cálida que la app ===== */
+        body.vista-admin #sidebar { background: #fffdf9; box-shadow: 2px 0 14px rgba(90,61,38,.18); }
+        body.vista-admin #sidebar .content { background: #fffdf9; padding: 14px; }
+        body.vista-admin #sidebar button.btn-sync, body.vista-admin #sidebar button.btn-depot-config,
+        body.vista-admin #sidebar button.btn-limpiar-registros, body.vista-admin #sidebar button.btn-resumen-rutas,
+        body.vista-admin #sidebar button.btn-cierre-dia {
+            border-radius: 14px; padding: 12px 10px; font-size: 13px; font-weight: 700; margin-bottom: 9px; box-shadow: none; transition: background .2s;
+        }
+        /* Principal */
+        body.vista-admin #sidebar button.btn-sync { background: #5a3d26; color: #fff; }
+        body.vista-admin #sidebar button.btn-sync:hover { background: #3b2a1c; }
+        /* Secundarios */
+        body.vista-admin #sidebar button.btn-resumen-rutas, body.vista-admin #sidebar button.btn-cierre-dia { background: #D7B182; color: #3b2a1c; }
+        body.vista-admin #sidebar button.btn-resumen-rutas:hover, body.vista-admin #sidebar button.btn-cierre-dia:hover { background: #c79d6a; }
+        /* Utilidad */
+        body.vista-admin #sidebar button.btn-depot-config { background: #f5ece3; color: #5a3d26; border: 1px solid #e6d6bf; }
+        body.vista-admin #sidebar button.btn-depot-config:hover { background: #ecdcc8; }
+        /* Destructivo: contorno rojo suave, no relleno */
+        body.vista-admin #sidebar button.btn-limpiar-registros { background: #fff; color: #b3402f; border: 1.5px solid #e3b4ab; }
+        body.vista-admin #sidebar button.btn-limpiar-registros:hover { background: #fbeceb; }
+
+        body.vista-admin #lista-ubicaciones-repartidores { background: #f5ece3 !important; border: 1px solid #e6d6bf !important; border-radius: 14px !important; }
+        body.vista-admin #lista-ubicaciones-repartidores > div:first-child { color: #5a3d26 !important; }
+
+        body.vista-admin .control-rutas { background: #f5ece3; border: 1px solid #e6d6bf; border-radius: 16px; padding: 14px; }
+        body.vista-admin .control-rutas label { color: #5a3d26 !important; font-size: 12.5px !important; font-weight: 700; }
+        body.vista-admin .control-rutas select, body.vista-admin .control-rutas .input-dinamico-rutas, body.vista-admin .control-rutas input[type="time"] {
+            width: 100% !important; box-sizing: border-box; background: #fffdf9 !important; color: #3b2a1c; border: 1px solid #e6d6bf !important; border-radius: 12px !important; padding: 10px 12px !important;
+        }
+        body.vista-admin button.btn-opt { background: #5a3d26; border-radius: 14px; padding: 13px; font-size: 14px; }
+        body.vista-admin button.btn-opt:hover { background: #3b2a1c; }
+        body.vista-admin button.btn-reopt-single { background: #5a3d26; border-radius: 14px; box-shadow: none; }
+        body.vista-admin button.btn-reopt-single:hover { background: #3b2a1c; }
+        body.vista-admin .bloque-filtro-clientes { background: #fffdf9; border: 1px solid #e6d6bf; border-radius: 14px; padding: 12px; }
+        body.vista-admin .bloque-filtro-clientes label { color: #5a3d26 !important; }
+        body.vista-admin .buscador-cliente-input { background: #f5ece3; border: 1px solid #e6d6bf; border-radius: 10px; padding: 8px 10px; }
+        body.vista-admin .lista-checkbox-clientes { border: 1px solid #e6d6bf; border-radius: 10px; background: #fffdf9; }
+        body.vista-admin .btn-limpiar-filtros { background: #D7B182; color: #3b2a1c; border-radius: 10px; padding: 8px; }
+        body.vista-admin .btn-limpiar-filtros:hover { background: #c79d6a; }
+        body.vista-admin .route-section-title { border-radius: 12px; padding: 10px 12px; }
+        body.vista-admin .route-item { background: #fffdf9; border-radius: 12px; border: 1px solid #f0e6d8; border-left-width: 5px; box-shadow: 0 2px 6px rgba(90,61,38,.08); }
+        body.vista-admin .route-item:hover { background: #f5ece3; }
+        body.vista-admin .route-item.entregado { background: #f4f8ef; }
+        body.vista-admin .route-item.error-coord { background: #fdf3e6; }
+        body.vista-admin .info-adicional a { color: #8a5a2b; }
+        @media (max-width: 768px) {
+            body.vista-admin #sidebar { border-radius: 22px 22px 0 0; box-shadow: 0 -8px 24px rgba(90,61,38,.28); }
+            body.vista-admin #sidebar::before { content: ""; display: block; width: 42px; height: 5px; border-radius: 5px; background: #e1d3c0; margin: 8px auto 0; flex-shrink: 0; }
+        }
     </style>
 </head>
 <body>
