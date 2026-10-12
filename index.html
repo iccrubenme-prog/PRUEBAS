@@ -436,7 +436,7 @@
             body.vista-repartidor #nav-barra-superior {
                 top: 12px !important; left: 12px !important; right: 12px !important; transform: none !important;
                 width: auto !important; max-width: none !important; background: #fffdf9 !important;
-                border-radius: 20px !important; border-bottom: 3px solid #D7B182; padding: 9px 12px !important;
+                border-radius: 20px !important; overflow: hidden; padding: 11px 12px 14px !important;
                 box-shadow: 0 6px 18px rgba(90,61,38,.28) !important;
             }
             body.vista-repartidor #nav-barra-superior > div:first-child { display: none !important; }
@@ -444,16 +444,15 @@
             body.vista-repartidor #nav-superior-nombre { color: #5a3d26 !important; font-size: 15px !important; }
             body.vista-repartidor #nav-superior-direccion { color: #a07a4e !important; font-size: 11.5px !important; }
             body.vista-repartidor .app-solo-movil.app-logo-top { display: block; width: 34px; height: 34px; flex-shrink: 0; }
-            body.vista-repartidor #app-ruta-titulo { display: block; font-size: 10px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: #b8894f; }
+            body.vista-repartidor #app-ruta-titulo { display: block; font-size: 17px; font-weight: 800; color: #5a3d26; line-height: 1.15; }
+            body.vista-repartidor #app-ruta-sub { display: block; font-size: 12px; color: #a07a4e; margin-top: 2px; }
+            body.vista-repartidor #nav-superior-nombre, body.vista-repartidor #nav-superior-direccion { display: none !important; }
             body.vista-repartidor #app-chip-progreso {
                 display: block; background: #f5ece3; border-radius: 14px; padding: 5px 10px; text-align: center;
                 font-weight: 800; color: #5a3d26; font-size: 15px; line-height: 1.1; flex-shrink: 0;
             }
             #app-chip-progreso small { display: block; font-size: 9.5px; font-weight: 600; color: #a07a4e; }
-            body.vista-repartidor #app-barra-progreso {
-                display: block; position: absolute; top: 80px; left: 24px; right: 24px; height: 6px; border-radius: 6px;
-                background: rgba(255,255,255,.88); overflow: hidden; z-index: 1000; box-shadow: 0 1px 3px rgba(0,0,0,.15);
-            }
+            body.vista-repartidor #app-barra-progreso { display: block; position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: #f0e6d8; }
             #app-barra-progreso i { display: block; height: 100%; width: 0; background: #D7B182; transition: width .3s; }
 
             /* Botones flotantes */
@@ -461,6 +460,7 @@
             body.vista-repartidor #nav-botones-circulares button { background: #fffdf9 !important; }
             body.vista-repartidor .leaflet-bottom { bottom: var(--sheet-h, 260px); }
             body.vista-repartidor .leaflet-control-zoom { display: none; }
+            body.vista-repartidor .leaflet-top.leaflet-left { top: 86px; }
 
             /* Hoja inferior */
             body.vista-repartidor #nav-barra-inferior {
@@ -621,17 +621,17 @@
             <img class="app-solo-movil app-logo-top header-logo" alt="">
             <div style="flex:1; min-width:0;">
                 <div id="app-ruta-titulo" class="app-solo-movil"></div>
+                <div id="app-ruta-sub" class="app-solo-movil"></div>
                 <div id="nav-superior-nombre" style="font-weight:bold; font-size:14px; color:#2c3e50; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">—</div>
                 <div id="nav-superior-direccion" style="font-size:11px; color:#888; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">—</div>
             </div>
             <div id="app-chip-progreso" class="app-solo-movil">0/0<small>entregados</small></div>
             <div id="nav-superior-eta-badge" style="background:#27ae60; color:#fff; font-weight:bold; font-size:13px; border-radius:12px; padding:4px 10px; flex-shrink:0;">—</div>
+            <div id="app-barra-progreso" class="app-solo-movil"><i></i></div>
         </div>
 
         <script>document.querySelectorAll(".header-logo").forEach(function(i){var g=document.querySelector(".gate-logo"); if(g) i.src=g.src;});</script>
-        <div id="app-barra-progreso" class="app-solo-movil"><i></i></div>
-
-        <!-- Botones circulares flotantes -->
+                <!-- Botones circulares flotantes -->
         <div id="nav-botones-circulares" style="display:none; flex-direction:column; gap:10px; position:absolute; right:12px; bottom:170px; z-index:1000;">
             <button id="btn-centrar-circular" onclick="activarSeguimientoCamara()" title="Centrar en mi ubicación" style="width:44px; height:44px; border-radius:50%; background:#fff; border:none; box-shadow:0 2px 8px rgba(0,0,0,0.3); font-size:18px; cursor:pointer;">📍</button>
             <button id="btn-ver-ruta-completa" onclick="verRutaCompleta()" title="Ver ruta completa" style="width:44px; height:44px; border-radius:50%; background:#fff; border:none; box-shadow:0 2px 8px rgba(0,0,0,0.3); font-size:18px; cursor:pointer;">🗺️</button>
@@ -1903,7 +1903,7 @@ if (punto.notas && punto.notas.trim() !== "") {
     // también se incluyan — si no, sus pines podían quedar fuera del área visible.
     const debeEncuadrarAutomaticamente = ROL_ACTUAL !== "repartidor" || !primerEncuadreRepartidorHecho;
     if (coordenadasParaEncuadre.length > 1 && debeEncuadrarAutomaticamente) {
-        map.fitBounds(coordenadasParaEncuadre, { padding: [40, 40] });
+        map.fitBounds(coordenadasParaEncuadre, opcionesEncuadreMapa());
         if (ROL_ACTUAL === "repartidor") primerEncuadreRepartidorHecho = true;
     }
 
@@ -2507,6 +2507,18 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
         const UMBRAL_RECALCULO_METROS = 150;         // no recalcular por jitter de GPS estando quieto
         const INTERVALO_MINIMO_RECALCULO_MS = 60000;  // máximo 1 recálculo automático por minuto
 
+        // Padding del encuadre: en la vista app del celular, la tarjeta superior y la hoja
+        // inferior tapan parte del mapa, así que se deja ese espacio libre para que TODA la
+        // ruta quede visible entre ambas.
+        function opcionesEncuadreMapa() {
+            if (ROL_ACTUAL === "repartidor" && window.matchMedia("(max-width: 768px)").matches) {
+                const sheet = document.getElementById("nav-barra-inferior");
+                const hoja = sheet ? sheet.offsetHeight : 260;
+                return { paddingTopLeft: [28, 100], paddingBottomRight: [28, hoja + 24], maxZoom: 17 };
+            }
+            return { padding: [40, 40] };
+        }
+
         function distanciaMetrosEntreCoords(lat1, lng1, lat2, lng2) {
             const R = 6371000;
             const toRad = d => d * Math.PI / 180;
@@ -2753,7 +2765,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             }
 
             _cambioMapaProgramatico = true;
-            if (coords.length > 1) map.fitBounds(coords, { padding: [40, 40] });
+            if (coords.length > 1) map.fitBounds(coords, opcionesEncuadreMapa());
             setTimeout(() => { _cambioMapaProgramatico = false; }, 500);
         }
 
@@ -2790,7 +2802,15 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             const barraApp = document.querySelector('#app-barra-progreso i');
             if (barraApp) barraApp.style.width = porcentaje + '%';
             const tituloApp = document.getElementById('app-ruta-titulo');
-            if (tituloApp) tituloApp.textContent = `Ruta ${idxRuta + 1}` + (diaActivoFiltrado !== "todos" ? ` · ${diaActivoFiltrado}` : '');
+            if (tituloApp) tituloApp.textContent = `Ruta ${idxRuta + 1}`;
+            const subApp = document.getElementById('app-ruta-sub');
+            if (subApp) {
+                const pend = total - entregados;
+                const partes = [];
+                if (diaActivoFiltrado !== "todos") partes.push(diaActivoFiltrado);
+                partes.push(pend === 0 ? "Ruta completada 🎉" : `${pend} pendiente${pend === 1 ? '' : 's'}`);
+                subApp.textContent = partes.join(" · ");
+            }
         }
 
         // Cuando ya no hay clientes pendientes, se calcula el regreso real al depósito
