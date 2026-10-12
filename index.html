@@ -498,6 +498,23 @@
             #app-tabbar button:focus, #app-tabbar button:focus-visible { outline: none; box-shadow: none; }
         }
         .btn-salir-drawer { display: none; width: 100%; margin-top: 16px; padding: 12px; border: none; border-radius: 12px; background: #D7B182; color: #3b2a1c; font-weight: 700; cursor: pointer; }
+
+        /* ===== Menú lateral del repartidor: misma paleta que la app ===== */
+        #drawer-repartidor { background: #fffdf9 !important; border-right: 4px solid #D7B182; padding: 18px 16px !important; }
+        .drawer-header-repartidor { border-bottom: 1px solid #f0e6d8 !important; }
+        .drawer-header-repartidor strong { color: #5a3d26 !important; font-size: 17px !important; font-weight: 800; }
+        .btn-cerrar-drawer { background: #f5ece3 !important; color: #5a3d26 !important; border: none !important; border-radius: 12px !important; box-shadow: none !important; }
+        #drawer-body-repartidor label { color: #5a3d26 !important; font-size: 12.5px !important; font-weight: 700 !important; letter-spacing: .2px; }
+        #drawer-body-repartidor select, #drawer-body-repartidor input[type="time"] {
+            width: 100% !important; box-sizing: border-box; background: #f5ece3 !important; color: #3b2a1c !important;
+            border: 1px solid #e6d6bf !important; border-radius: 12px !important; padding: 11px 12px !important; font-size: 14px !important;
+        }
+        #drawer-body-repartidor .btn-reopt-single, #drawer-body-repartidor #btn-reopt-individual {
+            background: #5a3d26 !important; color: #fff !important; border-radius: 14px !important; padding: 14px 10px !important;
+            font-weight: 800 !important; box-shadow: none !important;
+        }
+        .btn-salir-drawer { background: #fffdf9 !important; color: #5a3d26 !important; border: 2px solid #D7B182 !important; border-radius: 14px !important; font-weight: 800 !important; }
+        #drawer-overlay-repartidor { background: rgba(59,42,28,.45) !important; }
     </style>
 </head>
 <body>
