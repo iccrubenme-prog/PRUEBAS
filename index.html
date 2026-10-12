@@ -661,6 +661,47 @@
             #adm-sheet .row em { margin-left: auto; font-style: normal; font-weight: 800; color: #5a3d26; font-size: 13px; text-align: right; }
             #adm-sheet .vermas { width: 100%; background: none; border: none; box-shadow: none; color: #8a5a2b; font-weight: 700; font-size: 12.5px; padding: 6px 0 0; cursor: pointer; }
         }
+
+        /* ----- Detalle (ruta / en vivo) ----- */
+        #adm-detalle { display: none; }
+        @media (max-width: 768px) {
+            body.vista-admin.adm-panel-detalle #adm-detalle {
+                display: flex; flex-direction: column; position: fixed; left: 0; right: 0; top: 96px; bottom: 62px; z-index: 1600;
+                background: #fffdf9; border-radius: 26px 26px 0 0; box-shadow: 0 -8px 24px rgba(90,61,38,.28); overflow: hidden;
+            }
+            #adm-detalle .grab { width: 42px; height: 5px; border-radius: 5px; background: #e1d3c0; margin: 10px auto 4px; flex-shrink: 0; }
+            #adm-detalle .cab { display: flex; align-items: center; gap: 8px; padding: 4px 12px 10px; flex-shrink: 0; border-bottom: 1px solid #f0e6d8; }
+            #adm-detalle .cab button { min-width: 44px; min-height: 44px; border-radius: 14px; background: #f5ece3 !important; color: #5a3d26; border: none; box-shadow: none !important; font-size: 18px; cursor: pointer; }
+            #adm-detalle .cab h3 { flex: 1; font-size: 17px; color: #5a3d26; line-height: 1.2; }
+            #adm-detalle .cab h3 small { display: block; font-size: 12px; font-weight: 500; color: #a07a4e; }
+            #adm-detalle .cuerpo { overflow-y: auto; padding: 10px 14px 18px; flex: 1; }
+            #adm-detalle .resumen { display: flex; gap: 8px; margin-bottom: 10px; }
+            #adm-detalle .resumen div { flex: 1; background: #f5ece3; border-radius: 14px; padding: 8px 10px; font-size: 11px; color: #a07a4e; }
+            #adm-detalle .resumen b { display: block; font-size: 15px; color: #5a3d26; }
+            #adm-detalle .cli { display: flex; gap: 10px; align-items: center; padding: 11px 10px; border-radius: 14px; background: #fffdf9; border: 1px solid #f0e6d8; margin-bottom: 8px; min-height: 56px; cursor: pointer; }
+            #adm-detalle .cli:active { background: #f5ece3; }
+            #adm-detalle .num { width: 30px; height: 30px; border-radius: 50%; color: #fff; display: grid; place-items: center; font-weight: 800; font-size: 13px; flex-shrink: 0; }
+            #adm-detalle .cli .tx { min-width: 0; flex: 1; }
+            #adm-detalle .cli b { display: block; font-size: 14px; color: #3b2a1c; }
+            #adm-detalle .cli small { display: block; font-size: 12px; color: #8a7560; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            #adm-detalle .est { font-size: 11.5px; font-weight: 700; border-radius: 999px; padding: 4px 9px; white-space: nowrap; }
+            #adm-detalle .est.ok { background: #e7f3e4; color: #2f7a3c; }
+            #adm-detalle .est.pen { background: #f5ece3; color: #8a5a2b; }
+            #adm-detalle .cli.done b { text-decoration: line-through; color: #a89a88; }
+            #adm-detalle .verMapa { width: 100%; margin-bottom: 12px; padding: 12px; border: none; border-radius: 14px; background: #5a3d26; color: #fff; font-weight: 800; font-size: 14px; cursor: pointer; }
+            #adm-detalle .vacio { text-align: center; color: #8a7560; padding: 28px 12px; font-size: 14px; line-height: 1.4; }
+            #adm-detalle .estado { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #2f7a3c; font-weight: 600; }
+            #adm-detalle .estado i { width: 9px; height: 9px; border-radius: 50%; background: #2ecc71; display: inline-block; box-shadow: 0 0 0 3px rgba(46,204,113,.25); }
+            #adm-detalle .estado.viejo { color: #a8741a; } #adm-detalle .estado.viejo i { background: #e6a23c; box-shadow: 0 0 0 3px rgba(230,162,60,.25); }
+            #adm-detalle .barra { height: 5px; background: #f0e6d8; border-radius: 5px; overflow: hidden; margin-top: 6px; } #adm-detalle .barra i { display: block; height: 100%; background: #D7B182; }
+            #adm-sheet .row { cursor: pointer; } #adm-sheet .row:active { background: #ecdcc8; }
+            #adm-sheet .row::after { content: "›"; color: #a07a4e; font-size: 22px; margin-left: 4px; }
+            #adm-sheet .stat .vivo { background: none !important; border: none; box-shadow: none !important; text-align: left; padding: 0; cursor: pointer; font-size: 11.5px; color: #a07a4e; }
+            #adm-sheet .stat .vivo b { display: flex; align-items: center; gap: 6px; font-size: 17px; color: #5a3d26; }
+            #adm-sheet .stat .vivo b i { width: 9px; height: 9px; border-radius: 50%; background: #2ecc71; display: inline-block; }
+            #adm-sheet .stat .vivo b.off i { background: #c9bba8; }
+            #adm-sheet .stat .vivo b em { font-style: normal; font-size: 16px; color: #a07a4e; }
+        }
     </style>
 </head>
 <body>
@@ -689,6 +730,12 @@
         <button id="tab-ruta" class="on" onclick="cambiarTabApp('ruta')"><span>🗺️</span>Ruta</button>
         <button id="tab-clientes" onclick="cambiarTabApp('clientes')"><span>📋</span>Clientes</button>
         <button id="tab-menu" onclick="cambiarTabApp('menu')"><span>☰</span>Menú</button>
+    </div>
+
+    <div id="adm-detalle" role="dialog" aria-label="Detalle">
+        <div class="grab"></div>
+        <div class="cab"><button onclick="cambiarTabAdmin('mapa')" aria-label="Volver al mapa">‹</button><h3 id="adm-det-titulo"></h3></div>
+        <div class="cuerpo" id="adm-det-cuerpo"></div>
     </div>
 
     <div id="adm-tabbar">
@@ -793,7 +840,7 @@
         <script>document.querySelectorAll(".header-logo").forEach(function(i){var g=document.querySelector(".gate-logo"); if(g) i.src=g.src;});</script>
         <div id="adm-sheet">
             <div class="grab"></div>
-            <div class="stat"><div>Entregados<b id="adm-st-ent">0/0</b></div><div>En vivo<b id="adm-st-vivo">0</b></div><div>Cobro total<b id="adm-st-cobro">$0</b></div></div>
+            <div class="stat"><div>Entregados<b id="adm-st-ent">0/0</b></div><button class="vivo" onclick="cambiarTabAdmin('vivo')" aria-label="Ver repartidores en vivo">En vivo<b id="adm-st-vivo-b"><i></i><span id="adm-st-vivo">0</span><em>›</em></b></button><div>Cobro total<b id="adm-st-cobro">$0</b></div></div>
             <div id="adm-sheet-rutas"></div>
             <button class="vermas" onclick="cambiarTabAdmin('lista')">Ver lista de clientes ▸</button>
         </div>
@@ -1517,6 +1564,8 @@
 
         function aplicarFiltroDia(dia) {
             diaActivoFiltrado = dia;
+            const _fd = document.getElementById("filtro-dia");
+            if (_fd && _fd.value !== dia) _fd.value = dia;
             localStorage.setItem("tenate_filtro_dia", dia);
             reconstruirRutasEstructuradasDesdeClientes();
             actualizarSelectoresDeRutaDinamicos();
@@ -2912,15 +2961,22 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
 
 
         // ===== Vista administrador tipo app (celular) =====
+        let admDetalle = null; // {tipo:'ruta', idx} | {tipo:'vivo'}
+        const plAdm = (n, sing, plur) => `${n} ${n === 1 ? sing : (plur || sing + 's')}`;
+        const escAdm = t => String(t == null ? '' : t).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+
         function cambiarTabAdmin(tab) {
             const b = document.body;
-            b.classList.remove("adm-panel-dividir", "adm-panel-mas", "adm-panel-lista");
+            b.classList.remove("adm-panel-dividir", "adm-panel-mas", "adm-panel-lista", "adm-panel-detalle");
+            admDetalle = null;
             const titulo = document.getElementById("adm-panel-titulo");
             let activa = "mapa";
             if (tab === "dividir") { b.classList.add("adm-panel-dividir"); titulo.textContent = "✂️ Dividir y optimizar rutas"; activa = "dividir"; }
             else if (tab === "mas") { b.classList.add("adm-panel-mas"); titulo.textContent = "Más opciones"; activa = "mas"; }
             else if (tab === "lista") { b.classList.add("adm-panel-lista"); titulo.textContent = "Clientes por ruta"; activa = "mapa"; }
             else if (tab === "resumen") { mostrarResumenRutas(); }
+            else if (tab === "vivo") { admDetalle = { tipo: "vivo" }; b.classList.add("adm-panel-detalle"); }
+            else if (tab && tab.tipo === "ruta") { admDetalle = tab; b.classList.add("adm-panel-detalle"); }
             ["mapa", "dividir", "resumen", "mas"].forEach(t => {
                 const el = document.getElementById("atab-" + t);
                 if (el) el.classList.toggle("on", t === activa);
@@ -2939,9 +2995,78 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                 sel.innerHTML = [...origen.options].map(o => `<option value="${o.value}">${o.text}</option>`).join("");
                 sel.dataset.firma = firma;
             }
-            sel.value = origen.value;
-            const op = origen.options[origen.selectedIndex];
-            txt.textContent = (origen.value === "todos") ? "Todos los días" : (op ? op.text.replace(/^[^\wÁÉÍÓÚÑáéíóúñ]+/, "") : origen.value);
+            // La fuente de verdad es el día realmente aplicado (diaActivoFiltrado)
+            sel.value = diaActivoFiltrado;
+            const op = [...origen.options].find(o => o.value === diaActivoFiltrado);
+            const limpio = t => t.replace(/^[^\wÁÉÍÓÚÑáéíóúñ]+/, "").trim();
+            txt.textContent = diaActivoFiltrado === "todos" ? "Todos los días" : (op ? limpio(op.text) : diaActivoFiltrado);
+        }
+
+
+        function enfocarEnMapaAdmin(lat, lng) {
+            cambiarTabAdmin('mapa');
+            if (lat == null || lng == null) return;
+            setTimeout(() => { try { map.invalidateSize(); map.setView([lat, lng], 17, { animate: true }); } catch (e) {} }, 120);
+        }
+
+        function verRutaEnMapaAdmin(idx) {
+            const pts = ((rutasEstructuradas[idx] || []).filter(p => p.id !== 0 && p.lat !== null && p.lng !== null && (diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado))).map(p => [p.lat, p.lng]);
+            pts.push([deposito.lat, deposito.lng]);
+            cambiarTabAdmin('mapa');
+            setTimeout(() => { try { map.invalidateSize(); map.fitBounds(pts, { paddingTopLeft: [28, 130], paddingBottomRight: [28, 170] }); } catch (e) {} }, 150);
+        }
+
+        function renderDetalleAdmin() {
+            const cuerpo = document.getElementById("adm-det-cuerpo");
+            const titulo = document.getElementById("adm-det-titulo");
+            if (!cuerpo || !admDetalle) return;
+            const nombres = construirMapaNombresPorRuta();
+            if (admDetalle.tipo === "ruta") {
+                const idx = admDetalle.idx;
+                const color = obtenerColorRuta(idx);
+                const cli = (rutasEstructuradas[idx] || []).filter(p => p.id !== 0 && (diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado))
+                    .sort((a, b) => (a.cte ?? 999) - (b.cte ?? 999));
+                const ent = cli.filter(p => p.entregado).length;
+                const cobro = cli.reduce((a, p) => a + (parseFloat(p.monto) || 0), 0);
+                titulo.innerHTML = `Ruta ${idx + 1}${nombres[idx] ? " · " + escAdm(nombres[idx]) : ""}<small>${plAdm(cli.length,'cliente')} · ${plAdm(ent,'entregado')}</small>`;
+                const t = (tiemposEstimadosRutas[idx] || "").match(/Total Recorrido:\s*(.+)$/);
+                let html = `<div class="resumen"><div>Cobro<b>$${cobro.toLocaleString('es-MX', {maximumFractionDigits: 0})}</b></div><div>Avance<b>${ent}/${cli.length}</b></div><div>Tiempo<b>${t ? escAdm(t[1]) : "—"}</b></div></div>`;
+                html += `<button class="verMapa" onclick="verRutaEnMapaAdmin(${idx})">🗺️ Ver esta ruta en el mapa</button>`;
+                if (cli.length === 0) html += '<div class="vacio">Esta ruta no tiene clientes con el filtro actual.</div>';
+                html += cli.map(c => {
+                    const eta = llegadasEstimadasPorCliente[c.id];
+                    const sub = [c.direccion, (!c.entregado && eta) ? "Llegada " + eta : ""].filter(Boolean).join(" · ");
+                    const lat = (c.lat !== null && c.lat !== undefined) ? c.lat : "null";
+                    const lng = (c.lng !== null && c.lng !== undefined) ? c.lng : "null";
+                    return `<div class="cli ${c.entregado ? "done" : ""}" role="button" tabindex="0" onclick="enfocarEnMapaAdmin(${lat}, ${lng})">
+                        <div class="num" style="background:${color}">${escAdm(c.cte ?? "•")}</div>
+                        <div class="tx"><b>${escAdm(c.nombre)}</b><small>${escAdm(sub)}</small></div>
+                        <span class="est ${c.entregado ? "ok" : "pen"}">${c.entregado ? "✓ Entregado" : "Pendiente"}</span></div>`;
+                }).join("");
+                cuerpo.innerHTML = html;
+            } else {
+                titulo.innerHTML = `Repartidores en vivo<small>${repartidoresEnVivoAdmin.length ? repartidoresEnVivoAdmin.length + " conectado" + (repartidoresEnVivoAdmin.length === 1 ? "" : "s") : "Sin conexiones activas"}</small>`;
+                if (repartidoresEnVivoAdmin.length === 0) {
+                    cuerpo.innerHTML = '<div class="vacio">Nadie está conectado por ahora.<br>Los repartidores aparecen aquí cuando inician su ruta.</div>';
+                    return;
+                }
+                cuerpo.innerHTML = [...repartidoresEnVivoAdmin].sort((a, b) => a.idx - b.idx).map(r => {
+                    const color = obtenerColorRuta(r.idx);
+                    const nombre = nombres[r.idx] || `Ruta ${r.idx + 1}`;
+                    const seg = Math.max(0, Math.round((Date.now() - (r.ts || 0)) / 1000));
+                    const hace = seg < 60 ? `hace ${seg} s` : `hace ${Math.round(seg / 60)} min`;
+                    const viejo = seg > 120;
+                    const cli = (rutasEstructuradas[r.idx] || []).filter(p => p.id !== 0 && (diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado));
+                    const ent = cli.filter(p => p.entregado).length;
+                    const pct = cli.length ? Math.round(ent * 100 / cli.length) : 0;
+                    return `<div class="cli" role="button" tabindex="0" onclick="enfocarEnMapaAdmin(${r.lat}, ${r.lng})">
+                        <div class="num" style="background:${color}">${escAdm(String(nombre).trim().charAt(0).toUpperCase())}</div>
+                        <div class="tx"><b>${escAdm(nombre)}</b><small>Ruta ${r.idx + 1} · ${ent}/${cli.length} ${cli.length === 1 ? 'entrega' : 'entregas'}</small>
+                        <div class="barra"><i style="width:${pct}%"></i></div>
+                        <div class="estado ${viejo ? "viejo" : ""}" style="margin-top:6px"><i></i>${viejo ? "Sin señal reciente" : "Conectado"} · ${hace}</div></div>
+                        <span style="font-size:20px;color:#a07a4e">›</span></div>`;
+                }).join("");
+            }
         }
 
         function actualizarHojaAdmin() {
@@ -2962,15 +3087,18 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                 const t = tiemposEstimadosRutas[idx] || "";
                 const m = t.match(/Total Recorrido:\s*(.+)$/);
                 const nombre = nombres[idx] ? ` · ${nombres[idx]}` : "";
-                filas += `<div class="row"><div class="dot" style="background:${obtenerColorRuta(idx)}"></div><div><b>Ruta ${idx + 1}${nombre}</b><small>${cli.length} clientes · ${ent} entregados</small></div><em>$${cobro.toLocaleString('es-MX', {maximumFractionDigits: 0})}${m ? `<br><small style="font-weight:400">⏱ ${m[1]}</small>` : ""}</em></div>`;
+                filas += `<div class="row" role="button" tabindex="0" onclick="cambiarTabAdmin({tipo:'ruta', idx:${idx}})"><div class="dot" style="background:${obtenerColorRuta(idx)}"></div><div><b>Ruta ${idx + 1}${escAdm(nombre)}</b><small>${plAdm(cli.length,'cliente')} · ${plAdm(ent,'entregado')}</small></div><em>$${cobro.toLocaleString('es-MX', {maximumFractionDigits: 0})}${m ? `<br><small style="font-weight:400">⏱ ${m[1]}</small>` : ""}</em></div>`;
             });
             document.getElementById("adm-sheet-rutas").innerHTML = filas || '<div style="color:#8a7560;font-size:13px;padding:6px 2px;">Aún no hay rutas. Usa <b>Dividir</b> para crearlas.</div>';
             document.getElementById("adm-st-ent").textContent = `${totalEnt}/${totalCli}`;
             document.getElementById("adm-st-cobro").textContent = "$" + totalCobro.toLocaleString('es-MX', {maximumFractionDigits: 0});
             const vivo = document.querySelectorAll("#lista-ubicaciones-repartidores-items > *").length;
-            document.getElementById("adm-st-vivo").textContent = vivo;
+            document.getElementById("adm-st-vivo").textContent = repartidoresEnVivoAdmin.length || vivo;
+            const bv = document.getElementById("adm-st-vivo-b");
+            if (bv) bv.classList.toggle("off", (repartidoresEnVivoAdmin.length || vivo) === 0);
+            if (admDetalle) renderDetalleAdmin();
             const sub = document.getElementById("adm-top-sub");
-            if (sub) sub.textContent = `${rutasConClientes} rutas · ${totalCli} clientes`;
+            if (sub) sub.textContent = `${plAdm(rutasConClientes,'ruta')} · ${plAdm(totalCli,'cliente')}`;
             const wrapper = document.getElementById("map-wrapper");
             if (wrapper) wrapper.style.setProperty("--adm-sheet-h", (document.body.className.indexOf("adm-panel-") >= 0 ? 0 : sheet.offsetHeight) + "px");
         }
@@ -3640,6 +3768,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
         // esa ruta tiene en el mapa, y se ignoran ubicaciones muy viejas (repartidor inactivo).
         let marcadoresUbicacionRepartidores = {}; // { idxRuta: capa de Leaflet }
         let intervaloUbicacionesRepartidores = null;
+        let repartidoresEnVivoAdmin = []; // [{idx, lat, lng, ts}] para el panel "En vivo" del celular
         let posicionesGPSPorRutaAdmin = {}; // { idxRuta: {lat, lng} } — para que la línea del admin parta del mismo punto que ve el repartidor
         const ANTIGUEDAD_MAXIMA_UBICACION_MS = 45 * 60 * 1000; // 45 min: después de eso se considera inactivo
 
@@ -3689,6 +3818,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                 .then(r => r.json())
                 .then(ubicaciones => {
                     const idxVistos = new Set();
+                    repartidoresEnVivoAdmin = [];
                     let huboUbicacionNuevaRelevante = false;
 
                     // Primero se recopilan todas las ubicaciones válidas y visibles, y se
@@ -3706,6 +3836,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
 
                     entradasValidas.forEach(({ idx, lat, lng, latOriginal, lngOriginal }) => {
                         idxVistos.add(idx);
+                        repartidoresEnVivoAdmin.push({ idx, lat: latOriginal, lng: lngOriginal, ts: (ubicaciones[idx] && ubicaciones[idx].ts) || Date.now() });
                         const color = obtenerColorRuta(idx);
                         const nombreRuta = `Ruta ${idx + 1}`;
 
