@@ -3539,8 +3539,11 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                 wa.href = digitos ? "https://api.whatsapp.com/send?phone=" + num + "&text=" + encodeURIComponent("¡Hola! 👋 Te saludamos de El Tenate. 🚛✨🧺\nTe informamos que acabamos de llegar a tu ubicación para tu entrega. 📍🙌\nEstamos afuera de tu domicilio, ¡quedamos atentos a tu salida! 🛎️😊\n¡Muchas gracias por tu preferencia!🤝😊") : "#";
                 wa.classList.toggle("off", !digitos);
                 const tieneCoords = cliente.lat !== null && cliente.lat !== undefined && cliente.lng !== null && cliente.lng !== undefined;
-                nav.href = tieneCoords ? obtenerEnlaceMaps(cliente.lat, cliente.lng) : "#";
-                nav.classList.toggle("off", !tieneCoords);
+                // Mismo destino que "Abrir Link Cel": el link original de ubicación del cliente.
+                // Solo si no tiene link válido se usa el punto de coordenadas como respaldo.
+                const linkCel = (cliente.urlOriginal && String(cliente.urlOriginal).startsWith("http")) ? cliente.urlOriginal : "";
+                nav.href = linkCel || (tieneCoords ? obtenerEnlaceMaps(cliente.lat, cliente.lng) : "#");
+                nav.classList.toggle("off", !linkCel && !tieneCoords);
             }
             // Altura de la hoja → los botones flotantes y la atribución del mapa quedan por encima
             const sheet = document.getElementById("nav-barra-inferior");
