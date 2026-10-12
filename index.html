@@ -527,7 +527,19 @@
             background: #5a3d26 !important; color: #fff !important; border-radius: 14px !important; padding: 14px 10px !important;
             font-weight: 800 !important; box-shadow: none !important;
         }
-        .btn-salir-drawer { background: #fffdf9 !important; color: #5a3d26 !important; border: 2px solid #D7B182 !important; border-radius: 14px !important; font-weight: 800 !important; }
+        #drawer-body-repartidor, .btn-salir-drawer { display: none !important; }
+        .mas-fila { position: relative; display: flex; align-items: center; gap: 14px; width: 100%; box-sizing: border-box; text-align: left; padding: 11px 2px; margin: 0; background: transparent !important; border: none; border-bottom: 1px solid #f0e6d8; border-radius: 0; box-shadow: none !important; cursor: pointer; font-family: inherit; min-height: 62px; transform: none !important; }
+        #drawer-lista .mas-fila:last-child { border-bottom: none; }
+        .mas-fila:active { background: #f8f1e6 !important; }
+        .mas-fila .ic { width: 44px; height: 44px; border-radius: 14px; background: #f5ece3; display: grid; place-items: center; font-size: 21px; flex-shrink: 0; }
+        .mas-fila .tx { flex: 1; min-width: 0; }
+        .cal-mini { width: 28px; height: 30px; border-radius: 7px; background: #fff; border: 1.5px solid #D7B182; overflow: hidden; display: flex; flex-direction: column; text-align: center; }
+        .cal-mini i { display: block; background: #b8894f; color: #fff; font-style: normal; font-size: 8px; font-weight: 800; line-height: 10px; letter-spacing: .4px; text-transform: uppercase; }
+        .cal-mini b { display: block; color: #3b2a1c; font-size: 14px; line-height: 18px; font-weight: 800; }
+        .mas-fila b { display: block; font-size: 16px; font-weight: 700; color: #3b2a1c; line-height: 1.25; }
+        .mas-fila small { display: block; font-size: 13px; color: #8a7560; margin-top: 1px; }
+        .mas-fila select, .mas-fila input[type=time] { position: absolute; inset: 0; width: 100% !important; height: 100%; opacity: 0; font-size: 16px; border: none; }
+        .btn-salir-drawer-old { background: #fffdf9 !important; color: #5a3d26 !important; border: 2px solid #D7B182 !important; border-radius: 14px !important; font-weight: 800 !important; }
         #drawer-overlay-repartidor { background: rgba(59,42,28,.45) !important; }
 
         /* ===== Vista administrador: misma paleta cálida que la app ===== */
@@ -655,6 +667,10 @@
             #adm-top .t b { display: block; font-size: 17px; color: #5a3d26; }
             #adm-top .t small { display: block; color: #a07a4e; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
             #adm-chip-dia { position: relative; background: #f5ece3; border-radius: 14px; padding: 7px 10px; font-weight: 700; color: #5a3d26; font-size: 12.5px; white-space: nowrap; max-width: 130px; overflow: hidden; text-overflow: ellipsis; }
+            #adm-chip-dia { display: flex; align-items: center; gap: 7px; }
+            #adm-cal { width: 26px; height: 28px; border-radius: 7px; background: #fff; border: 1.5px solid #D7B182; overflow: hidden; display: flex; flex-direction: column; flex-shrink: 0; text-align: center; }
+            #adm-cal i { display: block; background: #b8894f; color: #fff; font-style: normal; font-size: 8px; font-weight: 800; line-height: 10px; letter-spacing: .4px; text-transform: uppercase; }
+            #adm-cal b { display: block; color: #3b2a1c; font-size: 13px; line-height: 16px; font-weight: 800; }
             #adm-chip-dia select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; font-size: 16px; }
 
             /* Leyenda de rutas como pastillas bajo la tarjeta */
@@ -800,6 +816,12 @@
             <button class="btn-cerrar-drawer" onclick="cerrarDrawerRepartidor()">✕</button>
         </div>
         <div id="drawer-body-repartidor"></div>
+        <div id="drawer-lista">
+            <label class="mas-fila"><span class="ic"><span class="cal-mini"><i id="drw-cal-mes">oct</i><b id="drw-cal-dia">1</b></span></span><span class="tx"><b>Filtrar por día</b><small id="drw-sub-dia">Todos los días</small></span><select id="drw-sel-dia" onchange="drwCambiarDia(this.value)" aria-label="Filtrar por día"></select></label>
+            <label class="mas-fila"><span class="ic">🕒</span><span class="tx"><b>Hora de salida a ruta</b><small id="drw-sub-hora">Sin definir</small></span><input type="time" id="drw-inp-hora" onchange="drwCambiarHora(this.value)" aria-label="Hora de salida a ruta"></label>
+            <button class="mas-fila" onclick="cerrarDrawerRepartidor(); reoptimizarRutaDesdeUbicacionActual()"><span class="ic">⚡</span><span class="tx"><b>Reoptimizar mi ruta</b><small>Desde mi ubicación (GPS)</small></span></button>
+            <button class="mas-fila" onclick="cerrarDrawerRepartidor(); regresarAPantallaDeRoles()"><span class="ic">🚪</span><span class="tx"><b>Salir</b></span></button>
+        </div>
         <button class="btn-salir-drawer" onclick="cerrarDrawerRepartidor(); regresarAPantallaDeRoles()">🔄 Salir</button>
     </div>
 
@@ -892,7 +914,7 @@
         <div id="adm-top">
             <img class="header-logo" alt="">
             <div class="t"><b>Panel Admin</b><small id="adm-top-sub">—</small></div>
-            <label id="adm-chip-dia">📅 <span id="adm-dia-txt">Todos</span> ▾<select id="adm-dia-select" onchange="aplicarFiltroDia(this.value); sincronizarChipDiaAdmin();"></select></label>
+            <label id="adm-chip-dia"><span id="adm-cal" aria-hidden="true"><i id="adm-cal-mes">oct</i><b id="adm-cal-dia">1</b></span><span id="adm-dia-txt">Todos</span> ▾<select id="adm-dia-select" onchange="aplicarFiltroDia(this.value); sincronizarChipDiaAdmin();"></select></label>
         </div>
         <script>document.querySelectorAll(".header-logo").forEach(function(i){var g=document.querySelector(".gate-logo"); if(g) i.src=g.src;});</script>
         <div id="adm-pill"><i></i><span id="adm-pill-txt"></span><button onclick="verTodasRutasAdmin()" aria-label="Quitar filtro y ver todas las rutas">✕ Ver todas</button></div>
@@ -3005,7 +3027,31 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             if (anclaReopt && btnReopt) anclaReopt.insertAdjacentElement('afterend', btnReopt);
         }
 
+        function actualizarDrawerRep() {
+            { const hoy = new Date(), n = t => String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+              const wd = ["domingo","lunes","martes","miercoles","jueves","viernes","sabado"].findIndex(d => n(diaActivoFiltrado).includes(d));
+              const f = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+              if (wd >= 0) f.setDate(f.getDate() + (((wd - hoy.getDay() + 10) % 7) - 3));
+              const m = document.getElementById("drw-cal-mes"), d = document.getElementById("drw-cal-dia");
+              if (m) m.textContent = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"][f.getMonth()];
+              if (d) d.textContent = f.getDate(); }
+            const o = document.getElementById("filtro-dia"), sel = document.getElementById("drw-sel-dia");
+            if (o && sel) {
+                const firma = [...o.options].map(x => x.value).join("|");
+                if (sel.dataset.firma !== firma) { sel.innerHTML = [...o.options].map(x => `<option value="${x.value}">${x.text}</option>`).join(""); sel.dataset.firma = firma; }
+                sel.value = diaActivoFiltrado;
+                const sub = document.getElementById("drw-sub-dia");
+                const op = [...o.options].find(x => x.value === diaActivoFiltrado);
+                if (sub) sub.textContent = diaActivoFiltrado === "todos" ? "Todos los días" : (op ? op.text.replace(/^[^\wÁ-ú]+/u, "").trim() : diaActivoFiltrado);
+            }
+            const h = document.getElementById("hora-salida-ruta"), inp = document.getElementById("drw-inp-hora");
+            if (h && inp) { inp.value = h.value; const sh = document.getElementById("drw-sub-hora"); if (sh) sh.textContent = h.value || "Sin definir"; }
+        }
+        function drwCambiarDia(v) { aplicarFiltroDia(v); actualizarDrawerRep(); }
+        function drwCambiarHora(v) { const h = document.getElementById("hora-salida-ruta"); if (h) h.value = v; actualizarHoraSalidaRuta(v); actualizarDrawerRep(); }
+
         function abrirDrawerRepartidor() {
+            actualizarDrawerRep();
             document.getElementById('drawer-overlay-repartidor').style.display = 'block';
             document.getElementById('drawer-repartidor').classList.add('abierto');
         }
@@ -3090,6 +3136,17 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             sel.value = diaActivoFiltrado;
             const op = [...origen.options].find(o => o.value === diaActivoFiltrado);
             const limpio = t => t.replace(/^[^\wÁÉÍÓÚÑáéíóúñ]+/, "").trim();
+            // Ícono de calendario con la fecha del día de reparto (la ocurrencia más cercana a hoy)
+            const hoy = new Date();
+            const norm = t => String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            const dias = ["domingo", "lunes", "martes", "miercoles", "jueves", "viernes", "sabado"];
+            const wd = dias.findIndex(d => norm(diaActivoFiltrado).includes(d));
+            const f = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+            if (wd >= 0) f.setDate(f.getDate() + (((wd - hoy.getDay() + 10) % 7) - 3));
+            const meses = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+            const mEl = document.getElementById("adm-cal-mes"), dEl = document.getElementById("adm-cal-dia");
+            if (mEl) mEl.textContent = meses[f.getMonth()];
+            if (dEl) dEl.textContent = f.getDate();
             txt.textContent = diaActivoFiltrado === "todos" ? "Todos los días" : (op ? limpio(op.text) : diaActivoFiltrado);
         }
 
