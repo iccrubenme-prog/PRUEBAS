@@ -3226,23 +3226,66 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
         let admReordenar = false, admUltimoMovido = null, _admTimerTrazo = null;
         function admToggleReordenar() { admReordenar = !admReordenar; admUltimoMovido = null; renderDetalleAdmin(); }
 
-        function admMoverCliente(idxRuta, id, dir) {
-            if (ROL_ACTUAL !== "admin") return;
+        // Paradas "fijas": las que el admin colocó a mano en cierta posición (p. ej. un cliente que pidió las 11:00).
+        // El resto de las paradas se reoptimiza solo alrededor de ellas. { idxRuta: { idCliente: posición } }
+        let admPines = {};
+
+        // Reordena las paradas pendientes de una ruta: las fijas conservan su posición y las demás se acomodan
+        // por vecino más cercano + mejoras por intercambio, para el recorrido más corto posible.
+        function admReoptimizarConAnclas(idxRuta) {
             const ruta = rutasEstructuradas[idxRuta];
             if (!ruta) return;
-            const visible = p => p.id !== 0 && !p.entregado && (diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado);
-            const pos = ruta.findIndex(p => String(p.id) === String(id));
-            if (pos < 0) return;
-            // vecino pendiente más cercano en esa dirección (se saltan entregados, depósito y otros días)
-            let k = pos + dir;
-            while (k >= 0 && k < ruta.length && !visible(ruta[k])) k += dir;
-            if (k < 0 || k >= ruta.length) return;
-            const [cl] = ruta.splice(pos, 1);
-            ruta.splice(k, 0, cl);
+            const visible = p => p.id !== 0 && !p.entregado && p.lat !== null && p.lng !== null && (diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado);
+            const pend = ruta.filter(visible);
+            const n = pend.length;
+            if (n === 0) return;
+            const pines = admPines[idxRuta] || {};
+            const origen = (ruta[0] && ruta[0].id === 0 && ruta[0].lat != null) ? ruta[0] : deposito;
+            const d = (a, b) => distanciaMetrosEntreCoords(a.lat, a.lng, b.lat, b.lng);
 
-            // Renumerar #Cte según el nuevo orden (misma lógica que al marcar una entrega) y guardar
+            // 1) colocar las fijas en su posición (si dos coinciden, la siguiente se corre al primer hueco libre)
+            const arr = new Array(n).fill(null);
+            const fijas = pend.filter(c => pines[c.id] !== undefined).sort((a, b) => pines[a.id] - pines[b.id]);
+            fijas.forEach(c => {
+                let pos = Math.min(n - 1, Math.max(0, pines[c.id]));
+                let k = pos; while (k < n && arr[k]) k++;
+                if (k >= n) { k = pos; while (k >= 0 && arr[k]) k--; }
+                arr[k] = c; pines[c.id] = k;
+            });
+            // 2) rellenar los huecos con vecino más cercano
+            const libres = pend.filter(c => pines[c.id] === undefined);
+            for (let sl = 0; sl < n; sl++) {
+                if (arr[sl]) continue;
+                const prev = sl === 0 ? origen : arr[sl - 1];
+                let mejor = -1, md = Infinity;
+                libres.forEach((c, q) => { const dd = d(prev, c); if (dd < md) { md = dd; mejor = q; } });
+                arr[sl] = libres.splice(mejor, 1)[0];
+            }
+            // 3) mejora: intercambiar pares de paradas NO fijas mientras acorte el recorrido total
+            const idxLibres = arr.map((c, k) => pines[c.id] === undefined ? k : -1).filter(k => k >= 0);
+            const costo = () => { let t = d(origen, arr[0]); for (let k = 1; k < n; k++) t += d(arr[k - 1], arr[k]); return t + d(arr[n - 1], deposito); };
+            let actual = costo();
+            for (let pasada = 0; pasada < 20; pasada++) {
+                let mejoro = false;
+                for (let a = 0; a < idxLibres.length; a++) for (let b = a + 1; b < idxLibres.length; b++) {
+                    const x = idxLibres[a], y = idxLibres[b];
+                    [arr[x], arr[y]] = [arr[y], arr[x]];
+                    const c2 = costo();
+                    if (c2 < actual - 1) { actual = c2; mejoro = true; } else { [arr[x], arr[y]] = [arr[y], arr[x]]; }
+                }
+                if (!mejoro) break;
+            }
+            admPines[idxRuta] = pines;
+
+            // 4) reconstruir la ruta: depósito + pendientes reacomodadas + el resto (entregados, otros días, sin coordenadas) + depósito
+            const resto = ruta.filter(p => p.id !== 0 && !visible(p));
+            const ini = (ruta[0] && ruta[0].id === 0) ? ruta[0] : { id: 0, nombre: "TENATE", lat: deposito.lat, lng: deposito.lng };
+            const fin = (ruta.length > 1 && ruta[ruta.length - 1].id === 0) ? ruta[ruta.length - 1] : ini;
+            rutasEstructuradas[idxRuta] = [ini, ...arr, ...resto, fin];
+
+            // 5) renumerar #Cte y guardar
             let orden = 0; const asignaciones = [];
-            ruta.forEach(p => {
+            rutasEstructuradas[idxRuta].forEach(p => {
                 if (p.id === 0) return;
                 orden++; p.cte = orden;
                 const real = clientes.find(c => String(c.id) === String(p.id));
@@ -3254,15 +3297,41 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                 method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ accion: "guardar_rutas_masivo", asignaciones })
             }).catch(() => {});
+        }
 
-            admUltimoMovido = id;
+        function admRefrescarTrasReorden(idxRuta) {
             renderDetalleAdmin();
+            refrescarMapaYListasVisuales();
+            clearTimeout(_admTimerTrazo);
+            // Se recalculan línea y horas de llegada de esa ruta (con una breve espera para no saturar el servicio de rutas)
+            _admTimerTrazo = setTimeout(() => { trazarRutasEspecificas([idxRuta]); }, 400);
+        }
+
+        function admMoverCliente(idxRuta, id, dir) {
+            if (ROL_ACTUAL !== "admin") return;
+            const ruta = rutasEstructuradas[idxRuta];
+            if (!ruta) return;
+            const visible = p => p.id !== 0 && !p.entregado && p.lat !== null && p.lng !== null && (diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado);
+            const pend = ruta.filter(visible);
+            const i = pend.findIndex(p => String(p.id) === String(id));
+            const j = i + dir;
+            if (i < 0 || j < 0 || j >= pend.length) return;
+            const pines = admPines[idxRuta] = admPines[idxRuta] || {};
+            const vecino = pend[j];
+            pines[pend[i].id] = j;                                   // el movido queda fijo en su nueva posición
+            if (pines[vecino.id] !== undefined) pines[vecino.id] = i; // si el vecino también era fijo, se intercambian
+            admUltimoMovido = pend[i].id;
+            admReoptimizarConAnclas(idxRuta);                        // el resto se reacomoda solo
+            admRefrescarTrasReorden(idxRuta);
             const fila = document.querySelector(`#adm-det-cuerpo .cli[data-cid="${id}"]`);
             if (fila && fila.scrollIntoView) fila.scrollIntoView({ block: "nearest" });
-            refrescarMapaYListasVisuales();
-            // Se recalculan línea y horas de llegada con el nuevo orden (con una pequeña espera para no saturar OSRM)
-            clearTimeout(_admTimerTrazo);
-            _admTimerTrazo = setTimeout(() => { if (rutasOptimizadasActivas) trazarLineasYCalcularTiemposOSRM(); }, 500);
+        }
+
+        function admSoltarFijos(idxRuta) {
+            admPines[idxRuta] = {};
+            admUltimoMovido = null;
+            admReoptimizarConAnclas(idxRuta);
+            admRefrescarTrasReorden(idxRuta);
         }
 
         function renderDetalleAdmin() {
@@ -3292,7 +3361,10 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                 if (cli.length === 0) html += '<div class="vacio">Esta ruta no tiene clientes con el filtro actual.</div>';
                 if (cli.some(c => !c.entregado)) {
                     html += `<button class="verMapa sec ${admReordenar ? "on" : ""}" onclick="admToggleReordenar()">${admReordenar ? "✓ Listo, terminar de reacomodar" : "↕ Reacomodar paradas"}</button>`;
-                    if (admReordenar) html += '<div class="reord-ayuda">Sube o baja a cada cliente con las flechas hasta que su <b>hora de llegada</b> quede cerca de la que pidió. Las horas y la ruta se recalculan con cada movimiento.</div>';
+                    if (admReordenar) {
+                        html += '<div class="reord-ayuda">Sube o baja a cada cliente con las flechas hasta que su <b>hora de llegada</b> quede cerca de la que pidió. Ese cliente queda fijo 📌 y <b>el resto de la ruta se reoptimiza solo</b> alrededor de él; las horas se recalculan.</div>';
+                        if (Object.keys(admPines[idx] || {}).length) html += `<button class="verMapa sec" onclick="admSoltarFijos(${idx})">📌 Soltar fijos y reoptimizar toda la ruta</button>`;
+                    }
                 }
                 const movibles = cli.filter(c => !c.entregado);
                 html += cli.map(c => {
@@ -3307,7 +3379,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                         return `<div class="cli mov ${c.entregado ? "done" : ""} ${String(admUltimoMovido) === String(c.id) ? "movido" : ""}" data-cid="${c.id}">
                             <div class="num" style="background:${color}">${escAdm(c.cte ?? "•")}</div>
                             <div class="tx"><b>${escAdm(c.nombre)}${pk}</b><small>${escAdm(sub)}</small></div>
-                            ${(!c.entregado) ? `<span class="eta" title="Hora estimada de llegada">${eta ? escAdm(eta) : "—"}</span>` : ""}${mv}</div>`;
+                            ${(!c.entregado) ? `<span class="eta" title="Hora estimada de llegada">${(admPines[idx] && admPines[idx][c.id] !== undefined) ? "📌 " : ""}${eta ? escAdm(eta) : "—"}</span>` : ""}${mv}</div>`;
                     }
                     return `<div class="cli ${c.entregado ? "done" : ""}" role="button" tabindex="0" onclick="enfocarEnMapaAdmin(${lat}, ${lng})">
                         <div class="num" style="background:${color}">${escAdm(c.cte ?? "•")}</div>
