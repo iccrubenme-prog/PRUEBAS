@@ -683,6 +683,7 @@
             #adm-detalle .num { width: 30px; height: 30px; border-radius: 50%; color: #fff; display: grid; place-items: center; font-weight: 800; font-size: 13px; flex-shrink: 0; }
             #adm-detalle .cli .tx { min-width: 0; flex: 1; }
             #adm-detalle .cli b { display: block; font-size: 14px; color: #3b2a1c; }
+            #adm-detalle .cli b .pkg { display: inline-block; margin-left: 6px; padding: 2px 8px; border-radius: 999px; background: #f1e4d0; color: #6b4a22; font-size: 11px; font-weight: 700; vertical-align: 1px; text-decoration: none; }
             #adm-detalle .cli small { display: block; font-size: 12px; color: #8a7560; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
             #adm-detalle .est { font-size: 11.5px; font-weight: 700; border-radius: 999px; padding: 4px 9px; white-space: nowrap; }
             #adm-detalle .est.ok { background: #e7f3e4; color: #2f7a3c; }
@@ -3096,7 +3097,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                     const lng = (c.lng !== null && c.lng !== undefined) ? c.lng : "null";
                     return `<div class="cli ${c.entregado ? "done" : ""}" role="button" tabindex="0" onclick="enfocarEnMapaAdmin(${lat}, ${lng})">
                         <div class="num" style="background:${color}">${escAdm(c.cte ?? "•")}</div>
-                        <div class="tx"><b>${escAdm(c.nombre)}</b><small>${escAdm(sub)}</small></div>
+                        <div class="tx"><b>${escAdm(c.nombre)}${c.pedido ? `<span class="pkg">📦 ${escAdm(c.pedido)}</span>` : ""}</b><small>${escAdm(sub)}</small></div>
                         <span class="est ${c.entregado ? "ok" : "pen"}">${c.entregado ? "✓ Entregado" : "Pendiente"}</span></div>`;
                 }).join("");
                 cuerpo.innerHTML = html;
@@ -4199,10 +4200,16 @@ return texto.replace(/^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\s]+/u, "").trim();
             tbody.innerHTML = "";
             filas.forEach(f => {
                 const tr = document.createElement("tr");
+                const esCel = ROL_ACTUAL === "admin" && window.matchMedia("(max-width: 768px)").matches;
+                if (esCel) {
+                    tr.style.cursor = "pointer";
+                    tr.setAttribute("role", "button");
+                    tr.onclick = () => { cerrarResumenRutas(); cambiarTabAdmin({ tipo: "ruta", idx: f.indice }); };
+                }
                 tr.innerHTML = `
                     <td>
                         <span class="badge-ruta" style="background:${f.color}"></span>
-                        ${f.nombre}
+                        ${f.nombre}${esCel ? ' <span style="color:#a07a4e;font-weight:700">›</span>' : ''}
                     </td>
                     <td style="text-align:center;">${f.totalClientes}</td>
                    <td style="font-size:13px; color:#444; font-weight:600;">${f.tiempoTotal || "—"}</td>
