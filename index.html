@@ -27,7 +27,7 @@
         #map-wrapper:fullscreen #map, #map-wrapper:-webkit-full-screen #map { flex: 1; }
         #map { flex: 1; min-height: 0; }
 
-        @media (max-width: 768px) {
+        @media (max-width: 768px), (pointer: coarse) and (max-height: 540px) {
             body { flex-direction: column; height: 100vh; overflow: hidden; }
             #sidebar {
                 width: 100%; min-width: 0; flex-shrink: 0;
@@ -428,7 +428,7 @@
 
         /* ===== Modo "app" para el repartidor en celular ===== */
         #app-tabbar, .app-solo-movil { display: none; }
-        @media (max-width: 768px) {
+        @media (max-width: 768px), (pointer: coarse) and (max-height: 540px) {
             body.vista-repartidor { display: block; height: 100dvh; overflow: hidden; background: #f5ece3; }
             body.vista-repartidor #map-wrapper { position: fixed; top: 0; left: 0; right: 0; bottom: 62px; width: auto; height: auto; }
             body.vista-repartidor #sidebar {
@@ -552,7 +552,7 @@
         .btn-salir-drawer-old { background: #fffdf9 !important; color: #5a3d26 !important; border: 2px solid #D7B182 !important; border-radius: 14px !important; font-weight: 800 !important; }
         #drawer-overlay-repartidor { background: rgba(59,42,28,.45) !important; }
         /* En celular el menú del repartidor sube desde abajo (hoja), igual que "Más" del administrador */
-        @media (max-width: 768px) {
+        @media (max-width: 768px), (pointer: coarse) and (max-height: 540px) {
             #drawer-repartidor {
                 box-sizing: border-box !important; top: auto !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100% !important; max-width: none !important;
                 max-height: 82vh; border-right: none !important; border-radius: 26px 26px 0 0 !important;
@@ -609,14 +609,14 @@
         body.vista-admin .route-item.entregado { background: #f4f8ef; }
         body.vista-admin .route-item.error-coord { background: #fdf3e6; }
         body.vista-admin .info-adicional a { color: #8a5a2b; }
-        @media (max-width: 768px) {
+        @media (max-width: 768px), (pointer: coarse) and (max-height: 540px) {
             body.vista-admin #sidebar { border-radius: 22px 22px 0 0; box-shadow: 0 -8px 24px rgba(90,61,38,.28); }
             body.vista-admin #sidebar::before { content: ""; display: block; width: 42px; height: 5px; border-radius: 5px; background: #e1d3c0; margin: 8px auto 0; flex-shrink: 0; }
         }
 
         /* ===== Modo "app" para el administrador en celular ===== */
         #adm-tabbar, #adm-top, #adm-sheet, .adm-solo-movil { display: none; }
-        @media (max-width: 768px) {
+        @media (max-width: 768px), (pointer: coarse) and (max-height: 540px) {
             body.vista-admin { display: block; height: 100dvh; overflow: hidden; background: #f5ece3; }
             body.vista-admin #map-wrapper { position: fixed; top: 0; left: 0; right: 0; bottom: 62px; width: auto; height: auto; }
             body.vista-admin #map { height: 100%; }
@@ -729,7 +729,7 @@
 
         /* ----- Detalle (ruta / en vivo) ----- */
         #adm-detalle { display: none; }
-        @media (max-width: 768px) {
+        @media (max-width: 768px), (pointer: coarse) and (max-height: 540px) {
             body.vista-admin.adm-panel-detalle #adm-detalle {
                 display: flex; flex-direction: column; position: fixed; left: 0; right: 0; top: 96px; bottom: 62px; z-index: 1600;
                 background: #fffdf9; border-radius: 26px 26px 0 0; box-shadow: 0 -8px 24px rgba(90,61,38,.28); overflow: hidden;
@@ -783,19 +783,65 @@
         .vivo-dot.viejo { background: #e6a23c; box-shadow: 0 0 0 3px rgba(230,162,60,.25); }
         #adm-fab { display: none; }
         #adm-pill { display: none; }
-        @media (max-width: 768px) {
+        @media (max-width: 768px), (pointer: coarse) and (max-height: 540px) {
             body.vista-admin #adm-pill.on { display: flex; align-items: center; gap: 8px; position: absolute; left: 50%; transform: translateX(-50%); top: 118px; z-index: 1000; background: #fffdf9; color: #3b2a1c; border: 1.5px solid #D7B182; border-radius: 999px; padding: 5px 6px 5px 12px; font-size: 13px; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,.25); max-width: calc(100vw - 32px); white-space: nowrap; }
             body.vista-admin[class*="adm-panel-"] #adm-pill { display: none !important; }
             #adm-pill i { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
             #adm-pill button { background: #f1e4d0 !important; border: none; box-shadow: none !important; border-radius: 999px; padding: 6px 11px; font-size: 12px; font-weight: 700; color: #6b4a22; cursor: pointer; }
         }
-        @media (max-width: 768px) {
+        @media (max-width: 768px), (pointer: coarse) and (max-height: 540px) {
             body.vista-admin #adm-fab {
                 display: flex; flex-direction: column; gap: 10px; position: absolute; right: 12px; z-index: 1000;
                 bottom: calc(var(--adm-sheet-h, 150px) + 14px);
             }
             body.vista-admin[class*="adm-panel-"] #adm-fab { display: none; }
             #adm-fab button { width: 44px; height: 44px; border-radius: 50%; background: #fffdf9 !important; border: none; box-shadow: 0 2px 8px rgba(0,0,0,.3) !important; font-size: 18px; cursor: pointer; }
+        }
+
+        /* ===== Teléfono en horizontal: panel a la izquierda (clientes / resumen) y mapa a la derecha ===== */
+        @media (pointer: coarse) and (max-height: 540px) and (orientation: landscape) {
+            body.vista-repartidor, body.vista-admin { --lw: clamp(310px, 40vw, 400px); }
+            body.vista-repartidor #map-wrapper, body.vista-admin #map-wrapper { left: var(--lw); bottom: 0; }
+            body.vista-repartidor #app-tabbar, body.vista-admin #adm-tabbar { right: auto; width: var(--lw); }
+            body.vista-repartidor #app-tabbar, body.vista-admin #adm-tabbar { border-right: 1px solid #eadfcf; }
+
+            /* Tarjeta superior → arriba de la columna izquierda */
+            body.vista-repartidor #nav-barra-superior { position: fixed !important; top: 10px !important; left: 10px !important; right: auto !important; width: calc(var(--lw) - 20px) !important; }
+            body.vista-admin #adm-top { position: fixed; top: 10px; left: 10px; right: auto; width: calc(var(--lw) - 20px); box-sizing: border-box; }
+            body.vista-admin #adm-top .t b { font-size: 15px; }
+            body.vista-admin #adm-chip-dia { max-width: 110px; padding: 6px 8px; font-size: 11.5px; }
+
+            /* Hoja de resumen → ocupa la columna entre la tarjeta y la barra */
+            body.vista-repartidor #nav-barra-inferior {
+                position: fixed !important; left: 0 !important; right: auto !important; width: var(--lw) !important; top: 92px !important; bottom: 62px !important;
+                border-radius: 0 !important; overflow-y: auto; box-shadow: 2px 0 14px rgba(90,61,38,.18) !important; box-sizing: border-box;
+            }
+            body.vista-repartidor #nav-barra-inferior::before, body.vista-admin #sidebar::before, body.vista-repartidor #sidebar::before { display: none; }
+            body.vista-repartidor.tab-clientes #nav-barra-superior { display: none !important; }
+            body.vista-admin #adm-sheet {
+                position: fixed; left: 0; right: auto; width: var(--lw); top: 84px; bottom: 62px; max-height: none !important;
+                border-radius: 0; overflow-y: auto; box-sizing: border-box; box-shadow: 2px 0 14px rgba(90,61,38,.18);
+            }
+            /* Paneles (clientes, dividir, más, detalle) también en la columna izquierda */
+            body.vista-repartidor #sidebar, body.vista-admin #sidebar,
+            body.vista-admin.adm-panel-dividir #sidebar, body.vista-admin.adm-panel-mas #sidebar {
+                left: 0; right: auto; width: var(--lw); top: 0; bottom: 62px; max-height: none; border-radius: 0 22px 22px 0;
+            }
+            body.vista-admin.adm-panel-detalle #adm-detalle { left: 0; right: auto; width: var(--lw); top: 0; bottom: 62px; border-radius: 0 22px 22px 0; }
+            #adm-detalle .grab, body.vista-repartidor #sidebar .grab { display: none; }
+
+            /* Controles del mapa: ya no hay hoja debajo, quedan en las esquinas */
+            body.vista-repartidor #nav-botones-circulares { bottom: 14px !important; }
+            body.vista-admin #adm-fab { bottom: 14px; }
+            body.vista-repartidor .leaflet-bottom, body.vista-admin .leaflet-bottom { bottom: 0; }
+            body.vista-repartidor .leaflet-top.leaflet-left { top: 10px; }
+            body.vista-admin #leyenda-rutas-barra { top: 10px !important; left: 10px !important; right: 66px !important; }
+            body.vista-admin .leaflet-top.leaflet-left { top: 56px; }
+            body.vista-admin #adm-pill.on { top: 56px !important; }
+
+            /* Menú del repartidor en horizontal: hoja más alta, para que no haya que desplazarse */
+            #drawer-repartidor { max-height: 96vh; padding-top: 18px !important; }
+            .mas-fila { min-height: 54px; padding: 8px 2px; }
         }
     </style>
 </head>
@@ -2860,8 +2906,10 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
         // Padding del encuadre: en la vista app del celular, la tarjeta superior y la hoja
         // inferior tapan parte del mapa, así que se deja ese espacio libre para que TODA la
         // ruta quede visible entre ambas.
+        function esCelularHorizontal() { return window.matchMedia("(pointer: coarse) and (max-height: 540px) and (orientation: landscape)").matches; }
         function opcionesEncuadreMapa() {
-            if (ROL_ACTUAL === "repartidor" && window.matchMedia("(max-width: 768px)").matches) {
+            if (esCelularHorizontal()) return { padding: [40, 40], maxZoom: 17 };
+            if (ROL_ACTUAL === "repartidor" && window.matchMedia("(max-width: 768px), (pointer: coarse) and (max-height: 540px)").matches) {
                 const sheet = document.getElementById("nav-barra-inferior");
                 const hoja = sheet ? sheet.offsetHeight : 260;
                 return { paddingTopLeft: [28, 100], paddingBottomRight: [28, hoja + 24], maxZoom: 17 };
@@ -3432,7 +3480,8 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             (repartidoresEnVivoAdmin || []).forEach(r => { if (rutaActivaFiltrada === "todas" || parseInt(rutaActivaFiltrada) === r.idx) pts.push([r.lat, r.lng]); });
             if (pts.length < 2) { try { map.setView([deposito.lat, deposito.lng], 13); } catch (e) {} return; }
             const hoja = (document.getElementById("adm-sheet") || {}).offsetHeight || 150;
-            try { map.invalidateSize(); map.fitBounds(pts, { paddingTopLeft: [28, 140], paddingBottomRight: [28, hoja + 24], maxZoom: 17 }); } catch (e) {}
+            const horiz = esCelularHorizontal();
+            try { map.invalidateSize(); map.fitBounds(pts, horiz ? { paddingTopLeft: [40, 70], paddingBottomRight: [40, 40], maxZoom: 17 } : { paddingTopLeft: [28, 140], paddingBottomRight: [28, hoja + 24], maxZoom: 17 }); } catch (e) {}
         }
 
         function actualizarHojaAdmin() {
@@ -3527,6 +3576,11 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
         // ── Barras de navegación tipo Maps (repartidor) ───────────────────────────
         // Muestra "entregados/total" de la ruta activa del repartidor, con una barra de
         // progreso visual — para que sepa de un vistazo cuántos paquetes le faltan.
+        // Al girar el teléfono el mapa cambia de tamaño: se recalcula para que no queden zonas grises
+        ['resize', 'orientationchange'].forEach(ev => window.addEventListener(ev, () => {
+            setTimeout(() => { try { map.invalidateSize(); } catch (e) {} }, 250);
+        }));
+
         function actualizarBarraProgresoEntregas() {
             const contenedor = document.getElementById('barra-progreso-entregas');
             if (!contenedor) return;
@@ -4490,7 +4544,7 @@ return texto.replace(/^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\s]+/u, "").trim();
             tbody.innerHTML = "";
             filas.forEach(f => {
                 const tr = document.createElement("tr");
-                const esCel = ROL_ACTUAL === "admin" && window.matchMedia("(max-width: 768px)").matches;
+                const esCel = ROL_ACTUAL === "admin" && window.matchMedia("(max-width: 768px), (pointer: coarse) and (max-height: 540px)").matches;
                 if (esCel) {
                     tr.style.cursor = "pointer";
                     tr.setAttribute("role", "button");
