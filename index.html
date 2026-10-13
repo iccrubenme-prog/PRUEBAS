@@ -424,6 +424,7 @@
 }
 
 
+    .flecha-ruta { background: transparent !important; border: none !important; filter: drop-shadow(0 1px 2px rgba(0,0,0,.35)); pointer-events: none; }
     .gate-logo { display:block; width:104px; height:104px; margin:0 auto 10px; object-fit:contain; background:transparent; }
 
         /* ===== Modo "app" para el repartidor en celular ===== */
@@ -2491,6 +2492,55 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
         // siguen partiendo de tu posición real en vez de reiniciar desde El Tenate.
         let ultimaPosicionGPSVivo = null; // { lat, lng, idxRuta }
 
+
+        // ===== Trazo de ruta: línea sólida (admin) o flechas direccionales (repartidor) =====
+        // Para el repartidor se dibuja una guía fina y chevrones cada ~60 px que apuntan hacia donde
+        // se avanza. Van desplazados unos px a la derecha del sentido de marcha (como el tráfico), así
+        // el tramo de ida y el de regreso por la misma calle no se encimen y se distinguen siempre.
+        function crearCapaRuta(geometry, color) {
+            if (ROL_ACTUAL !== "repartidor") return L.geoJSON(geometry, { color: color, weight: 4, opacity: 0.7 });
+            const guia = L.geoJSON(geometry, { color: color, weight: 2.5, opacity: 0.35, interactive: false });
+            const flechas = L.layerGroup();
+            const grupo = L.featureGroup([guia, flechas]);
+            const coords = (geometry && geometry.coordinates) || [];
+            const ESPACIO = 58, DESPLAZ = 11;
+            let redibujando = false;
+            function redibujar() {
+                if (!grupo._map || redibujando) return;
+                redibujando = true;
+                try {
+                    flechas.clearLayers();
+                    const z = map.getZoom();
+                    const vista = map.getPixelBounds().pad(0.25);
+                    const pts = coords.map(c => map.project(L.latLng(c[1], c[0]), z));
+                    let acum = ESPACIO / 2;
+                    for (let i = 1; i < pts.length; i++) {
+                        const a = pts[i - 1], b = pts[i];
+                        const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy);
+                        if (len < 0.5) continue;
+                        const ux = dx / len, uy = dy / len;
+                        let pos = acum;
+                        while (pos <= len) {
+                            const x = a.x + ux * pos - uy * DESPLAZ, y = a.y + uy * pos + ux * DESPLAZ;
+                            if (vista.contains(L.point(x, y))) {
+                                const ang = Math.round(Math.atan2(ux, -uy) * 180 / Math.PI);
+                                const svg = `<svg width="20" height="20" viewBox="0 0 24 24" style="transform:rotate(${ang}deg);display:block;overflow:visible"><path d="M12 2 L21 20 L12 15 L3 20 Z" fill="${color}" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>`;
+                                flechas.addLayer(L.marker(map.unproject(L.point(x, y), z), {
+                                    icon: L.divIcon({ className: "flecha-ruta", html: svg, iconSize: [20, 20], iconAnchor: [10, 10] }),
+                                    interactive: false, keyboard: false, zIndexOffset: -500
+                                }));
+                            }
+                            pos += ESPACIO;
+                        }
+                        acum = pos - len;
+                    }
+                } finally { redibujando = false; }
+            }
+            grupo.on("add", () => { map.on("zoomend moveend", redibujar); redibujar(); });
+            grupo.on("remove", () => { map.off("zoomend moveend", redibujar); });
+            return grupo;
+        }
+
         function trazarLineasYCalcularTiemposOSRM() {
             lineasRutasCapas.forEach(l => map.removeLayer(l));
             lineasRutasCapas = [];
@@ -2547,7 +2597,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                     .then(res => {
                         if (miTokenTrazado !== _tokenTrazadoRutas) return; // ya hay una llamada más reciente, descartar
                         if (res.routes && res.routes[0]) {
-                            let rutaCapa = L.geoJSON(res.routes[0].geometry, { color: colorRuta, weight: 4, opacity: 0.7 }).addTo(map);
+                            let rutaCapa = crearCapaRuta(res.routes[0].geometry, colorRuta).addTo(map);
                             lineasRutasCapas.push(rutaCapa);
 
                             // T = tiempo de recorrido (duración OSRM)
@@ -2720,7 +2770,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                     let urlOsim = `https://router.project-osrm.org/route/v1/driving/${coordString}?overview=full&geometries=geojson`;
                     fetch(urlOsim).then(r => r.json()).then(res => {
                         if (res.routes && res.routes[0]) {
-                            let rutaCapa = L.geoJSON(res.routes[0].geometry, { color: colorRuta, weight: 4, opacity: 0.7 }).addTo(map);
+                            let rutaCapa = crearCapaRuta(res.routes[0].geometry, colorRuta).addTo(map);
                             lineasRutasCapas.push(rutaCapa);
                             actualizarTitulo(res.routes[0], puntosValidos, listaRuta, indiceRuta);
                         }
@@ -2731,7 +2781,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                     let urlOsim = `https://router.project-osrm.org/route/v1/driving/${coordString}?overview=full&geometries=geojson`;
                     fetch(urlOsim).then(r => r.json()).then(res => {
                         if (res.routes && res.routes[0]) {
-                            let rutaCapa = L.geoJSON(res.routes[0].geometry, { color: colorRuta, weight: 4, opacity: 0.7 }).addTo(map);
+                            let rutaCapa = crearCapaRuta(res.routes[0].geometry, colorRuta).addTo(map);
                             lineasRutasCapas.push(rutaCapa);
                             actualizarTitulo(res.routes[0], puntosValidos, listaRuta, indiceRuta);
                         }
@@ -2850,7 +2900,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                         if (!resVivo.routes || !resVivo.routes[0]) return;
 
                         const colorRuta = obtenerColorRuta(idxRuta);
-                        const rutaCapa = L.geoJSON(resVivo.routes[0].geometry, { color: colorRuta, weight: 4, opacity: 0.7 }).addTo(map);
+                        const rutaCapa = crearCapaRuta(resVivo.routes[0].geometry, colorRuta).addTo(map);
                         lineasRutasCapas.push(rutaCapa);
 
                         const legsVivo = resVivo.routes[0].legs || [];
