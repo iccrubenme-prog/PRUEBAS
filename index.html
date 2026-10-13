@@ -1215,7 +1215,7 @@
         const map = L.map('map', {
             fullscreenControl: false
         }).setView([deposito.lat, deposito.lng], 14);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 19 }).addTo(map);
 
         // Control de pantalla completa propio (no el del plugin): el plugin solo agranda
         // el div del mapa, dejando fuera las barras de navegación (elementos hermanos).
@@ -1267,6 +1267,17 @@
         // botón circular 📍 se resalta para invitar a retomarlo. Se ignora si el
         // movimiento lo generó el propio seguimiento (map.setView programático), no el usuario.
         let _cambioMapaProgramatico = false;
+        // Cualquier movimiento hecho por código (encuadres, setView, etc.) se marca como programático,
+        // para que NO cuente como si el repartidor hubiera movido el mapa y pausara el seguimiento.
+        ['setView', 'fitBounds', 'flyTo', 'flyToBounds'].forEach(nombre => {
+            const original = map[nombre].bind(map);
+            map[nombre] = function () {
+                _cambioMapaProgramatico = true;
+                clearTimeout(map._timerProgramatico);
+                map._timerProgramatico = setTimeout(() => { _cambioMapaProgramatico = false; }, 700);
+                return original.apply(null, arguments);
+            };
+        });
         map.on('dragstart zoomstart', () => {
             if (_cambioMapaProgramatico) return;
             if (ROL_ACTUAL === "repartidor" && seguimientoCamaraActivo) {
