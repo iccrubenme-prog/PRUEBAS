@@ -1625,8 +1625,10 @@
                 const etiqueta = nombresPorRuta[r] ? `Ruta ${nombresPorRuta[r]}` : `Ruta ${r + 1}`;
                 selectFiltro.innerHTML += `<option value="${r}">🚗 ${etiqueta}</option>`;
             }
+            const nSinRuta = clientesSinRutaFiltrados().length;
+            if (nSinRuta > 0) selectFiltro.innerHTML += `<option value="sinruta">📦 Clientes sin ruta (${nSinRuta})</option>`;
             selectFiltro.value = valorPrevioFiltro;
-            if (!selectFiltro.value || selectFiltro.value === "") selectFiltro.value = "todas";
+            if (!selectFiltro.value || selectFiltro.value === "") { selectFiltro.value = "todas"; if (valorPrevioFiltro === "sinruta") rutaActivaFiltrada = "todas"; }
 
             // ── Selector de días del gate (repartidor) ────────────────────────────
             const selectDiaGate = document.getElementById("select-dia-repartidor-gate");
@@ -1701,6 +1703,18 @@
         // para que la estructura en memoria siempre corresponda al día que se está viendo
         // (si no se reconstruye al cambiar de día, los clientes del nuevo día simplemente
         // no están en rutasEstructuradas y se ven como si no tuvieran ruta asignada).
+        // Clientes que NO tienen ruta asignada (se respetan los filtros de día y de selección).
+        // Nunca se les asigna una ruta automáticamente: solo se listan aparte.
+        function clientesSinRutaFiltrados() {
+            const idsEnRutas = new Set();
+            rutasEstructuradas.forEach(ruta => ruta.forEach(p => { if (p.id !== 0) idsEnRutas.add(p.id); }));
+            return clientes.filter(c =>
+                !idsEnRutas.has(c.id) &&
+                (diaActivoFiltrado === "todos" || c.dia === diaActivoFiltrado || !c.dia || c.dia.toString().trim() === "") &&
+                (clientesSeleccionadosFiltro.length === 0 || clientesSeleccionadosFiltro.includes(c.id.toString()))
+            );
+        }
+
         function reconstruirRutasEstructuradasDesdeClientes() {
             let tieneRutasAsignadas = clientes.some(c => c.rutaAsignadaBase && c.rutaAsignadaBase.toLowerCase().includes("ruta"));
 
@@ -1709,8 +1723,8 @@
                 let maxRutaNum = 1;
                 clientes.forEach(c => {
                     if (diaActivoFiltrado !== "todos" && c.dia !== diaActivoFiltrado) return;
-                    let match = c.rutaAsignadaBase.match(/\d+/);
-                    if (match) { let n = parseInt(match[0]); if (n > maxRutaNum) maxRutaNum = n; }
+                    let match = c.rutaAsignadaBase.match(/ruta\s*(\d+)/i);
+                    if (match) { let n = parseInt(match[1]); if (n > maxRutaNum) maxRutaNum = n; }
                 });
 
                 // Inicializar estructuras incluyendo Depósito al inicio y al final como cierre
@@ -1720,9 +1734,9 @@
                     // se reutiliza entre días distintos, así que sin este filtro se mezclan
                     // clientes de días diferentes en la misma ruta, rompiendo la secuencia de #Cte.
                     if (diaActivoFiltrado !== "todos" && c.dia !== diaActivoFiltrado) return;
-                    let match = c.rutaAsignadaBase.match(/\d+/);
+                    let match = c.rutaAsignadaBase.match(/ruta\s*(\d+)/i);
                     if (match) {
-                        let idx = parseInt(match[0]) - 1;
+                        let idx = parseInt(match[1]) - 1;
                         if (idx >= 0 && idx < maxRutaNum) rutasEstructuradas[idx].push(c);
                     }
                     // Si no tiene ruta asignada, NO se agrega a ninguna ruta
@@ -2219,22 +2233,15 @@ if (punto.notas && punto.notas.trim() !== "") {
     // ── Clientes sin ruta asignada ────────────────────────────────────────────
     // Se muestran en el mapa y en la lista con el mismo diseño de ficha,
     // en color gris, con su propia numeración, pero sin afectar rutas.
-    if (ROL_ACTUAL === "admin") {
+    if (ROL_ACTUAL === "admin" && (rutaActivaFiltrada === "todas" || rutaActivaFiltrada === "sinruta")) {
         const COLOR_SIN_RUTA = "#95a5a6";
-        const idsEnRutas = new Set();
-        rutasEstructuradas.forEach(ruta => ruta.forEach(p => { if (p.id !== 0) idsEnRutas.add(p.id); }));
-
-        const sinRuta = clientes.filter(c =>
-            !idsEnRutas.has(c.id) &&
-            (diaActivoFiltrado === "todos" || c.dia === diaActivoFiltrado || !c.dia || c.dia.toString().trim() === "") &&
-            (clientesSeleccionadosFiltro.length === 0 || clientesSeleccionadosFiltro.includes(c.id.toString()))
-        );
+        const sinRuta = clientesSinRutaFiltrados();
 
         if (sinRuta.length > 0) {
             const tituloSinRuta = document.createElement('div');
             tituloSinRuta.className = 'route-section-title';
             tituloSinRuta.style.backgroundColor = COLOR_SIN_RUTA;
-            tituloSinRuta.innerText = `Sin Ruta Asignada (${sinRuta.length} clientes)`;
+            tituloSinRuta.innerText = `Clientes sin ruta (${sinRuta.length})`;
             contenedorListasHtml.appendChild(tituloSinRuta);
 
             const ulSinRuta = document.createElement('ul');
@@ -3231,6 +3238,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             else if (tab === "lista") { b.classList.add("adm-panel-lista"); titulo.textContent = "Clientes por ruta"; activa = "mapa"; }
             else if (tab === "resumen") { mostrarResumenRutas(); }
             else if (tab === "vivo") { admDetalle = { tipo: "vivo" }; b.classList.add("adm-panel-detalle"); }
+            else if (tab && tab.tipo === "sinruta") { admDetalle = tab; b.classList.add("adm-panel-detalle"); }
             else if (tab && tab.tipo === "ruta") { admDetalle = tab; b.classList.add("adm-panel-detalle"); }
             ["mapa", "dividir", "resumen", "mas"].forEach(t => {
                 const el = document.getElementById("atab-" + t);
@@ -3312,6 +3320,11 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             const activa = ROL_ACTUAL === "admin" && rutaActivaFiltrada !== "todas";
             pill.classList.toggle("on", activa);
             if (!activa) return;
+            if (rutaActivaFiltrada === "sinruta") {
+                document.getElementById("adm-pill-txt").textContent = "Solo clientes sin ruta";
+                pill.querySelector("i").style.background = "#95a5a6";
+                return;
+            }
             const idx = parseInt(rutaActivaFiltrada);
             const nom = construirMapaNombresPorRuta()[idx];
             document.getElementById("adm-pill-txt").textContent = "Solo Ruta " + (idx + 1) + (nom ? " · " + nom : "");
@@ -3325,6 +3338,15 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             aplicarFiltroDeRutaMapeada(String(idx));
             actualizarPillFiltroAdmin();
             consultarUbicacionesRepartidores();
+            cambiarTabAdmin('mapa');
+            setTimeout(() => { verTodoMapaAdmin(); }, 200);
+        }
+
+        function verSinRutaEnMapaAdmin() {
+            const sel = document.getElementById("filtro-repartidor");
+            if (sel) sel.value = "sinruta";
+            aplicarFiltroDeRutaMapeada("sinruta");
+            actualizarPillFiltroAdmin();
             cambiarTabAdmin('mapa');
             setTimeout(() => { verTodoMapaAdmin(); }, 200);
         }
@@ -3455,7 +3477,25 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             const titulo = document.getElementById("adm-det-titulo");
             if (!cuerpo || !admDetalle) return;
             const nombres = construirMapaNombresPorRuta();
-            if (admDetalle.tipo === "ruta") {
+            if (admDetalle.tipo === "sinruta") {
+                const lista = clientesSinRutaFiltrados();
+                titulo.innerHTML = `Clientes sin ruta<small>${plAdm(lista.length,'cliente')} · sin repartidor asignado</small>`;
+                const cobro = lista.reduce((a, p) => a + (parseFloat(p.monto) || 0), 0);
+                let html = `<div class="resumen"><div>Clientes<b>${lista.length}</b></div><div>Cobro<b>$${cobro.toLocaleString('es-MX', {maximumFractionDigits: 0})}</b></div><div>Sin ubicación<b>${lista.filter(c => c.lat === null || c.lng === null).length}</b></div></div>`;
+                if (lista.length) html += `<button class="verMapa" onclick="verSinRutaEnMapaAdmin()">🗺️ Ver estos clientes en el mapa</button>`;
+                else html += '<div class="vacio">Todos los clientes tienen ruta con el filtro actual.</div>';
+                html += lista.map((c, i) => {
+                    const lat = (c.lat !== null && c.lat !== undefined) ? c.lat : "null";
+                    const lng = (c.lng !== null && c.lng !== undefined) ? c.lng : "null";
+                    const pk = c.pedido ? `<span class="pkg">📦 ${escAdm(c.pedido)}</span>` : "";
+                    const dia = c.dia ? escAdm(c.dia) : "Sin día";
+                    return `<div class="cli" role="button" tabindex="0" onclick="enfocarEnMapaAdmin(${lat}, ${lng})">
+                        <div class="num" style="background:#95a5a6">${i + 1}</div>
+                        <div class="tx"><b>${escAdm(c.nombre)}${pk}</b><small>${escAdm([c.direccion, dia].filter(Boolean).join(" · "))}</small></div>
+                        <span class="est pen">${(c.lat === null || c.lng === null) ? "Sin ubicación" : "Sin ruta"}</span></div>`;
+                }).join("");
+                cuerpo.innerHTML = html;
+            } else if (admDetalle.tipo === "ruta") {
                 const idx = admDetalle.idx;
                 const color = obtenerColorRuta(idx);
                 const cli = (rutasEstructuradas[idx] || []).filter(p => p.id !== 0 && (diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado))
@@ -3545,6 +3585,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                     if (p.id !== 0 && p.lat !== null && p.lng !== null && (diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado)) pts.push([p.lat, p.lng]);
                 });
             });
+            if (rutaActivaFiltrada === "todas" || rutaActivaFiltrada === "sinruta") clientesSinRutaFiltrados().forEach(c => { if (c.lat !== null && c.lng !== null) pts.push([c.lat, c.lng]); });
             (repartidoresEnVivoAdmin || []).forEach(r => { if (rutaActivaFiltrada === "todas" || parseInt(rutaActivaFiltrada) === r.idx) pts.push([r.lat, r.lng]); });
             if (pts.length < 2) { try { map.setView([deposito.lat, deposito.lng], 13); } catch (e) {} return; }
             const hoja = (document.getElementById("adm-sheet") || {}).offsetHeight || 150;
@@ -3574,7 +3615,9 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                 const nombre = nombres[idx] ? ` · ${nombres[idx]}` : "";
                 filas += `<div class="row" role="button" tabindex="0" onclick="cambiarTabAdmin({tipo:'ruta', idx:${idx}})"><div class="dot" style="background:${obtenerColorRuta(idx)}"></div><div><b>Ruta ${idx + 1}${escAdm(nombre)}${estadoConexionRutaAdmin(idx) ? `<span class="vivo-dot ${estadoConexionRutaAdmin(idx) === 'viejo' ? 'viejo' : ''}" title="Repartidor conectado"></span>` : ''}</b><small>${plAdm(cli.length,'cliente')} · ${plAdm(ent,'entregado')}</small></div><em>$${cobro.toLocaleString('es-MX', {maximumFractionDigits: 0})}${(m && !/^0\s*min/i.test(m[1])) ? `<br><small style="font-weight:400">⏱ ${m[1]}</small>` : ""}</em></div>`;
             });
-            document.getElementById("adm-sheet-rutas").innerHTML = filas || '<div style="color:#8a7560;font-size:13px;padding:6px 2px;">Aún no hay rutas. Usa <b>Dividir</b> para crearlas.</div>';
+            const sinRutaLista = clientesSinRutaFiltrados();
+            if (sinRutaLista.length) filas += `<div class="row" role="button" tabindex="0" onclick="cambiarTabAdmin({tipo:'sinruta'})"><div class="dot" style="background:#95a5a6"></div><div><b>Clientes sin ruta</b><small>${plAdm(sinRutaLista.length,'cliente')} · sin repartidor asignado</small></div></div>`;
+            document.getElementById("adm-sheet-rutas").innerHTML = (filas ? filas : '') + (rutasConClientes === 0 ? '<div style="color:#8a7560;font-size:13px;padding:6px 2px;">Aún no hay rutas. Usa <b>Dividir</b> para crearlas.</div>' : '');
             document.getElementById("adm-st-ent").textContent = `${totalEnt}/${totalCli}`;
             document.getElementById("adm-st-cobro").textContent = "$" + totalCobro.toLocaleString('es-MX', {maximumFractionDigits: 0});
             const vivo = document.querySelectorAll("#lista-ubicaciones-repartidores-items > *").length;
@@ -3590,7 +3633,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             });
             if (admDetalle) renderDetalleAdmin();
             const sub = document.getElementById("adm-top-sub");
-            if (sub) sub.textContent = `${plAdm(rutasConClientes,'ruta')} · ${plAdm(totalCli,'cliente')}`;
+            if (sub) sub.textContent = `${plAdm(rutasConClientes,'ruta')} · ${plAdm(totalCli + sinRutaLista.length,'cliente')}${sinRutaLista.length ? ` (${sinRutaLista.length} sin ruta)` : ""}`;
             const wrapper = document.getElementById("map-wrapper");
             if (wrapper) wrapper.style.setProperty("--adm-sheet-h", (document.body.className.indexOf("adm-panel-") >= 0 ? 0 : sheet.offsetHeight) + "px");
         }
