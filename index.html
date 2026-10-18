@@ -1415,17 +1415,31 @@
 
         function enfocarYResaltarCliente(id, lat, lng) {
             if (!lat || !lng) { alert("Este cliente aún no cuenta con coordenadas asignadas."); return; }
-            map.setView([lat, lng], 16);
-            const marcador = marcadoresMapeados[id];
-            if (marcador) {
-                marcador.openPopup();
-                const el = marcador.getElement();
-                if (el) {
-                    el.classList.remove("marcador-resaltado");
-                    void el.offsetWidth;
-                    el.classList.add("marcador-resaltado");
-                }
+            // En celular vertical la lista tapa el mapa: se pasa a la vista de mapa para que se vea el acercamiento
+            const listaTapaMapa = !esCelularHorizontal();
+            if (ROL_ACTUAL === "repartidor") {
+                // El zoom a un cliente lo pidió el repartidor: se pausa el seguimiento para que el GPS no lo regrese
+                seguimientoCamaraActivo = false;
+                if (typeof marcarBotonCentrarComoPausado === "function") marcarBotonCentrarComoPausado(true);
+                if (listaTapaMapa && typeof cambiarTabApp === "function") cambiarTabApp("ruta");
+            } else if (ROL_ACTUAL === "admin" && listaTapaMapa && typeof cambiarTabAdmin === "function") {
+                cambiarTabAdmin("mapa");
             }
+            setTimeout(() => {
+                try { map.invalidateSize(); } catch (e) {}
+                map.setView([lat, lng], 18, { animate: true });
+                const marcador = marcadoresMapeados[id];
+                if (marcador) {
+                    const el = marcador.getElement();
+                    if (el) {
+                        el.classList.remove("marcador-resaltado");
+                        void el.offsetWidth;
+                        el.classList.add("marcador-resaltado");
+                    }
+                    // En app móvil el popup tapa el pin sobre el mapa pequeño: se resalta el pin y solo en pantallas anchas se abre el popup
+                    if (!listaTapaMapa || window.innerWidth > 768) marcador.openPopup();
+                }
+            }, listaTapaMapa ? 150 : 0);
         }
 
         // Hace un fetch con límite de tiempo: si no responde en `timeoutMs`, se cancela
