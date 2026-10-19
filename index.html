@@ -753,6 +753,31 @@
             #adm-detalle .cli .tx { min-width: 0; flex: 1; }
             #adm-detalle .cli b { display: block; font-size: 14px; color: #3b2a1c; }
             #adm-detalle .cli b .pkg { display: inline-block; margin-left: 6px; padding: 2px 8px; border-radius: 999px; background: #f1e4d0; color: #6b4a22; font-size: 11px; font-weight: 700; vertical-align: 1px; text-decoration: none; }
+            #adm-detalle .sim-form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+            #adm-detalle .sim-form label { display: block; font-size: 12px; font-weight: 700; color: #8a7560; }
+            #adm-detalle .sim-form select, #adm-detalle .sim-form input { display: block; width: 100%; box-sizing: border-box; margin-top: 4px; padding: 11px 10px; border-radius: 12px; border: 1px solid #eadfcf; background: #fffdf9; color: #3b2a1c; font-size: 15px; font-family: inherit; }
+            #adm-detalle .sim-buscar { width: 100%; box-sizing: border-box; margin: 12px 0 8px; padding: 11px 12px; border-radius: 12px; border: 1px solid #eadfcf; background: #f5ece3; color: #3b2a1c; font-size: 14px; font-family: inherit; }
+            #adm-detalle .sim-nota { font-size: 12px; color: #8a7560; margin: 4px 2px 10px; line-height: 1.35; }
+            #adm-detalle .cli.sim { cursor: default; align-items: flex-start; }
+            #adm-detalle .sim-grupo { margin: 0 0 14px; }
+            #adm-detalle .sim-cab { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin-bottom: 8px; border-radius: 12px; background: #f5ece3; border-left: 6px solid #5a3d26; }
+            #adm-detalle .sim-cab .dot { display: none; }
+            #adm-detalle .sim-cab b { font-size: 15px; color: #3b2a1c; }
+            #adm-detalle .sim-cab small { font-size: 12px; color: #8a7560; display: block; }
+            #adm-detalle .cli.sim { align-items: center; padding: 10px; margin-bottom: 6px; cursor: pointer; }
+            #adm-detalle .cli.sim .num { width: 28px; height: 28px; font-size: 13px; }
+            #adm-detalle .cli.sim.open { background: #fbf6ee; border-color: #D7B182; }
+            #adm-detalle .cli.sim.done { opacity: .6; cursor: default; }
+            #adm-detalle .cli.sim .tx b { font-size: 14px; }
+            #adm-detalle .cli.sim .tx small { font-size: 11.5px; }
+            #adm-detalle .sim-eta b { font-size: 18px; }
+            #adm-detalle .sim-ruta { display: inline-block; margin-top: 4px; padding: 2px 8px; border-radius: 999px; background: #efe3d3; color: #5a3d26; font-size: 11.5px; font-weight: 700; }
+            #adm-detalle .sim-eta { flex-shrink: 0; text-align: right; }
+            #adm-detalle .sim-eta b { display: block; font-size: 19px; color: #5a3d26; }
+            #adm-detalle .sim-eta small { font-size: 11.5px; color: #8a7560; white-space: nowrap; }
+            #adm-detalle .sim-acc { display: flex; gap: 6px; margin-top: 8px; }
+            #adm-detalle .sim-acc button { flex: 1 1 0; min-width: 0; padding: 9px 4px; white-space: nowrap; font-size: 12px !important; border-radius: 12px; border: none; background: #f5ece3; color: #5a3d26; font-size: 12.5px; font-weight: 700; cursor: pointer; font-family: inherit; }
+            #adm-detalle .sim-acc button:active { background: #eadbc6; }
             #adm-detalle .cli .nota { display: block; margin-top: 3px; padding: 3px 8px; border-radius: 8px; background: #fbf1dc; color: #6b4a22; font-size: 12px; font-weight: 600; line-height: 1.3; white-space: normal; overflow-wrap: anywhere; }
             #adm-detalle .cli small { display: block; font-size: 12px; color: #8a7560; white-space: normal; overflow-wrap: anywhere; line-height: 1.3; }
             #adm-detalle .cli .llegada { display: inline-block; margin-top: 4px; padding: 2px 8px; border-radius: 999px; background: #f1e4d0; color: #5a3d26; font-size: 12px; font-weight: 800; }
@@ -945,7 +970,8 @@
         <div id="drawer-body-repartidor"></div>
         <div id="drawer-lista">
             <label class="mas-fila"><span class="ic"><span class="cal-mini"><i id="drw-cal-mes">oct</i><b id="drw-cal-dia">1</b></span></span><span class="tx"><b>Filtrar por día</b><small id="drw-sub-dia">Todos los días</small></span><select id="drw-sel-dia" onchange="drwCambiarDia(this.value)" aria-label="Filtrar por día"></select></label>
-            <label class="mas-fila"><span class="ic">🕒</span><span class="tx"><b>Hora de salida a ruta</b><small id="drw-sub-hora">Sin definir</small></span><input type="time" id="drw-inp-hora" onchange="drwCambiarHora(this.value)" aria-label="Hora de salida a ruta"></label>
+            <label class="mas-fila"><span class="ic">🕒</span><span class="tx"><b>Hora de salida a ruta</b><small id="drw-sub-hora">Automática</small></span><input type="time" id="drw-inp-hora" onchange="drwCambiarHora(this.value)" aria-label="Hora de salida a ruta"></label>
+            <button class="mas-fila" id="drw-fila-auto" style="display:none" onclick="restablecerHoraSalidaAuto()"><span class="ic">↺</span><span class="tx"><b>Volver a hora automática</b><small>Usar la hora actual del dispositivo</small></span></button>
             <button class="mas-fila" onclick="cerrarDrawerRepartidor(); reoptimizarRutaDesdeUbicacionActual()"><span class="ic">⚡</span><span class="tx"><b>Reoptimizar mi ruta</b><small>Desde mi ubicación (GPS)</small></span></button>
             <button class="mas-fila" onclick="cerrarDrawerRepartidor(); regresarAPantallaDeRoles()"><span class="ic">🚪</span><span class="tx"><b>Salir</b></span></button>
         </div>
@@ -1023,9 +1049,11 @@
             
             <div id="adm-mas-lista" class="adm-solo-movil">
                 <button class="mas-fila" onclick="importarDatosDesdeSheetsConReintentos()"><span class="ic">🔄</span><span class="tx"><b>Sincronizar Google Sheets</b><small>Actualizar clientes y pedidos</small></span></button>
+                <button class="mas-fila" onclick="cambiarTabAdmin({tipo:'simular'})"><span class="ic">🔮</span><span class="tx"><b>Simular llegadas</b><small>Responder a un cliente: día y hora estimada</small></span></button>
+                <label class="mas-fila"><span class="ic">🕒</span><span class="tx"><b>Hora de salida a ruta</b><small id="mas-sub-hora">Automática</small></span><input type="time" id="mas-inp-hora" onchange="masCambiarHora(this.value)" aria-label="Hora de salida a ruta"></label>
+                <button class="mas-fila" id="mas-fila-auto" style="display:none" onclick="restablecerHoraSalidaAuto()"><span class="ic">↺</span><span class="tx"><b>Volver a hora automática</b><small>Usar la hora actual del dispositivo</small></span></button>
                 <button class="mas-fila" onclick="mostrarCierreDia()"><span class="ic">📋</span><span class="tx"><b>Cierre de día</b></span></button>
                 <label class="mas-fila"><span class="ic">👁️</span><span class="tx"><b>Modo vista repartidor</b><small id="mas-sub-vista">Todas las rutas</small></span><select id="mas-sel-vista" onchange="masCambiarVista(this.value)" aria-label="Modo vista repartidor"></select></label>
-                <label class="mas-fila"><span class="ic">🕒</span><span class="tx"><b>Hora de salida a ruta</b><small id="mas-sub-hora">Sin definir</small></span><input type="time" id="mas-inp-hora" onchange="masCambiarHora(this.value)" aria-label="Hora de salida a ruta"></label>
                 <button class="mas-fila" onclick="configurarDepositoManual()"><span class="ic">⚙️</span><span class="tx"><b>Ubicación TENATE</b></span></button>
                 <button class="mas-fila peligro" onclick="confirmarLimpiarRegistrosPedidos()"><span class="ic">🗑️</span><span class="tx"><b>Limpiar estado / pago / ruta / notas</b></span></button>
                 <button class="mas-fila" onclick="regresarAPantallaDeRoles()"><span class="ic">🚪</span><span class="tx"><b>Salir</b></span></button>
@@ -1142,10 +1170,10 @@
         let rutasEstructuradas = [];
         let tiemposEstimadosRutas = {};
         // Factor de tráfico dinámico según día y hora (calibrado para zona urbana Puebla)
-        function obtenerFactorTrafico() {
+        function obtenerFactorTrafico(horaSim, diaSim) {
             const ahora = new Date();
-            const hora  = ahora.getHours() + ahora.getMinutes() / 60; // ej. 8.5 = 8:30
-            const dia   = ahora.getDay(); // 0=Dom, 1=Lun, ..., 6=Sáb
+            const hora  = (horaSim !== undefined) ? horaSim : (typeof minutosSalidaBase === "function" ? minutosSalidaBase() / 60 : ahora.getHours() + ahora.getMinutes() / 60); // ej. 8.5 = 8:30
+            const dia   = (diaSim !== undefined) ? diaSim : ahora.getDay(); // 0=Dom, 1=Lun, ..., 6=Sáb
 
             // Madrugada: todos los días (23:00-6:00)
             if (hora >= 23 || hora < 6) return 1.4;
@@ -1175,6 +1203,25 @@
         let llegadasEstimadasPorCliente = {}; // id cliente -> "HH:MM" estimado de llegada
         let trayectosMinutosPorCliente  = {}; // id cliente -> minutos de trayecto al llegar a ese punto
 
+        // Minutos desde medianoche de la hora de salida: la elegida a mano o, si no, la hora actual
+        function minutosSalidaBase() {
+            if (horaSalidaEditadaManualmente && /^\d{1,2}:\d{2}$/.test(horaSalidaRuta || "")) {
+                const [h, m] = horaSalidaRuta.split(":").map(Number);
+                return h * 60 + m;
+            }
+            const a = new Date();
+            return a.getHours() * 60 + a.getMinutes();
+        }
+        function restablecerHoraSalidaAuto() {
+            horaSalidaEditadaManualmente = false;
+            horaSalidaRuta = obtenerHoraActualHHMM();
+            const input = document.getElementById("hora-salida-ruta");
+            if (input) input.value = horaSalidaRuta;
+            if (rutasOptimizadasActivas) trazarLineasYCalcularTiemposOSRM();
+            if (typeof actualizarMenuMasAdmin === "function") actualizarMenuMasAdmin();
+            if (typeof actualizarDrawerRep === "function") actualizarDrawerRep();
+            if (typeof cerrarDrawerRepartidor === "function" && ROL_ACTUAL === "repartidor") cerrarDrawerRepartidor();
+        }
         function actualizarHoraSalidaRuta(valor) {
             horaSalidaEditadaManualmente = true;
             horaSalidaRuta = valor || obtenerHoraActualHHMM();
@@ -2704,8 +2751,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                                         if (miTokenTrazado !== _tokenTrazadoRutas) return; // descartar resultado obsoleto
                                         if (!resLL.routes || !resLL.routes[0]) return;
                                         const legsLL = resLL.routes[0].legs || [];
-                                        const _ahoraBase = new Date();
-                                        let minutosAcumulados = (_ahoraBase.getHours() * 60) + _ahoraBase.getMinutes();
+                                        let minutosAcumulados = minutosSalidaBase();
                                         let _coordPrev1 = null, _horaCoord1 = minutosAcumulados;
                                         let _minsTrayectoTramo = 0;
                                         for (let i = 0; i < puntosParaLlegadas.length; i++) {
@@ -2796,8 +2842,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
 
                     tiemposEstimadosRutas[indiceRuta] = `Trayecto: ${textoT} | Reparto: ${textoR} | Total Recorrido: ${textoTotal}`;
 
-                    const [hSal, mSal] = horaSalidaRuta.split(':').map(Number);
-                    let minutosAcumulados = (hSal * 60) + mSal;
+                    let minutosAcumulados = minutosSalidaBase();
                     const legs = resRoute.legs || [];
                     let _coordPrev2 = null, _horaCoord2 = minutosAcumulados;
                     let _minsTrayecto2 = 0;
@@ -2979,7 +3024,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
 
                         const legsVivo = resVivo.routes[0].legs || [];
                         const ahora = new Date();
-                        let minutosAcumulados = (ahora.getHours() * 60) + ahora.getMinutes();
+                        let minutosAcumulados = minutosSalidaBase();
                         let coordPrevVivo = null, horaCoordVivo = minutosAcumulados;
                         for (let i = 0; i < puntosParaLlegadasVivo.length; i++) {
                             const punto = puntosParaLlegadasVivo[i];
@@ -3263,7 +3308,8 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                 if (sub) sub.textContent = diaActivoFiltrado === "todos" ? "Todos los días" : (op ? op.text.replace(/^[^\wÁ-ú]+/u, "").trim() : diaActivoFiltrado);
             }
             const h = document.getElementById("hora-salida-ruta"), inp = document.getElementById("drw-inp-hora");
-            if (h && inp) { inp.value = h.value; const sh = document.getElementById("drw-sub-hora"); if (sh) sh.textContent = h.value || "Sin definir"; }
+            if (h && inp) { if (horaSalidaEditadaManualmente) h.value = horaSalidaRuta; inp.value = h.value; const sh = document.getElementById("drw-sub-hora"); if (sh) sh.textContent = horaSalidaEditadaManualmente ? horaSalidaRuta + " · fija" : "Automática (" + (h.value || "ahora") + ")"; }
+            const fa = document.getElementById("drw-fila-auto"); if (fa) fa.style.display = horaSalidaEditadaManualmente ? "" : "none";
         }
         function drwCambiarDia(v) { aplicarFiltroDia(v); actualizarDrawerRep(); }
         function drwCambiarHora(v) { const h = document.getElementById("hora-salida-ruta"); if (h) h.value = v; actualizarHoraSalidaRuta(v); actualizarDrawerRep(); }
@@ -3293,6 +3339,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             const b = document.body;
             b.classList.remove("adm-panel-dividir", "adm-panel-mas", "adm-panel-lista", "adm-panel-detalle");
             admDetalle = null; admReordenar = false; admUltimoMovido = null;
+            const _cpd = document.getElementById("adm-det-cuerpo"); if (_cpd) delete _cpd.dataset.sim;
             const titulo = document.getElementById("adm-panel-titulo");
             let activa = "mapa";
             if (tab === "dividir") { b.classList.add("adm-panel-dividir"); titulo.textContent = "✂️ Dividir y optimizar rutas"; activa = "dividir"; }
@@ -3300,6 +3347,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             else if (tab === "lista") { b.classList.add("adm-panel-lista"); titulo.textContent = "Clientes por ruta"; activa = "mapa"; }
             else if (tab === "resumen") { mostrarResumenRutas(); }
             else if (tab === "vivo") { admDetalle = { tipo: "vivo" }; b.classList.add("adm-panel-detalle"); }
+            else if (tab && tab.tipo === "simular") { admDetalle = tab; b.classList.add("adm-panel-detalle"); }
             else if (tab && tab.tipo === "sinruta") { admDetalle = tab; b.classList.add("adm-panel-detalle"); }
             else if (tab && tab.tipo === "ruta") { admDetalle = tab; b.classList.add("adm-panel-detalle"); }
             ["mapa", "dividir", "resumen", "mas"].forEach(t => {
@@ -3319,6 +3367,169 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             cambiarTabAdmin('mapa');
             setTimeout(() => { verTodoMapaAdmin(); }, 250);
         }
+
+        // ===== Simulador de llegadas (administrador) =====
+        // Calcula la hora aproximada de llegada a cada cliente de un DÍA elegido, saliendo a la hora elegida.
+        // No toca el mapa, los filtros ni la hoja: es solo para contestarle a un cliente.
+        let simResultados = null, simEstado = { dia: "", hora: "", buscar: "" };
+        const SIM_DIAS_SEMANA = { domingo: 0, lunes: 1, martes: 2, miercoles: 3, miércoles: 3, jueves: 4, viernes: 5, sabado: 6, sábado: 6 };
+        function simDiaSemana(nombreDia) {
+            const w = String(nombreDia || "").trim().split(/\s+/)[0].toLowerCase();
+            return (w in SIM_DIAS_SEMANA) ? SIM_DIAS_SEMANA[w] : undefined;
+        }
+        function simDiasDisponibles() {
+            const orden = { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 0: 6 };
+            return [...new Set(clientes.map(c => (c.dia || "").toString().trim()).filter(Boolean))]
+                .sort((a, b) => ((orden[simDiaSemana(a)] ?? 9) - (orden[simDiaSemana(b)] ?? 9)) || a.localeCompare(b));
+        }
+        function simHoraAMinutos(hhmm) { const [h, m] = String(hhmm || "").split(":").map(Number); return (isNaN(h) ? 8 : h) * 60 + (isNaN(m) ? 0 : m); }
+        function simRedondear5(min) { return Math.round(min / 5) * 5; }
+
+        async function simularLlegadasDia(dia, horaSalida) {
+            const MIN_CLIENTE = 10;
+            const salida = simHoraAMinutos(horaSalida);
+            const factor = obtenerFactorTrafico(salida / 60, simDiaSemana(dia));
+            const delDia = clientes.filter(c => (c.dia || "").toString().trim() === dia);
+            const porRuta = {}, sinRuta = [];
+            delDia.forEach(c => {
+                const m = (c.rutaAsignadaBase || "").match(/ruta\s*(\d+)/i);
+                if (!m) { sinRuta.push(c); return; }
+                (porRuta[parseInt(m[1])] = porRuta[parseInt(m[1])] || []).push(c);
+            });
+            const filas = [];
+            for (const num of Object.keys(porRuta).map(Number).sort((a, b) => a - b)) {
+                const lista = porRuta[num].slice().sort((a, b) => (a.cte ?? 9999) - (b.cte ?? 9999));
+                const conCoord = lista.filter(c => c.lat !== null && c.lng !== null && !c.entregado);
+                const repartidor = (lista.find(c => c.quien && c.quien.trim() && c.quien.trim() !== "Sin Asignar") || {}).quien || "";
+                lista.filter(c => c.entregado).forEach(c => filas.push({ c, ruta: num, repartidor, estado: "entregado" }));
+                lista.filter(c => !c.entregado && (c.lat === null || c.lng === null)).forEach(c => filas.push({ c, ruta: num, repartidor, estado: "sinubicacion" }));
+                if (conCoord.length === 0) continue;
+                const pts = [deposito, ...conCoord];
+                let legs = null, aprox = false;
+                try {
+                    const url = `https://router.project-osrm.org/route/v1/driving/${pts.map(p => `${p.lng},${p.lat}`).join(";")}?overview=false`;
+                    const res = await fetchConTimeout(url, 12000).then(r => r.json());
+                    if (res.routes && res.routes[0]) legs = res.routes[0].legs.map(l => l.duration);
+                } catch (e) {}
+                if (!legs) {
+                    aprox = true;
+                    legs = pts.slice(1).map((p, i) => (distanciaMetrosEntreCoords(pts[i].lat, pts[i].lng, p.lat, p.lng) * 1.3) / (30 / 3.6));
+                }
+                let acum = salida, ckPrev = null, horaCk = salida;
+                conCoord.forEach((c, i) => {
+                    acum += (legs[i] / 60) * factor;
+                    const ck = `${Math.round(c.lat * 1e6)}_${Math.round(c.lng * 1e6)}`;
+                    if (ck !== ckPrev) { if (ckPrev !== null) acum += MIN_CLIENTE; ckPrev = ck; horaCk = acum; }
+                    const desdeSalida = horaCk - salida;
+                    const holgura = Math.min(30, Math.max(10, simRedondear5(desdeSalida * 0.12)));
+                    filas.push({ c, ruta: num, repartidor, estado: "ok", min: horaCk, desde: horaCk - holgura, hasta: horaCk + holgura, aprox });
+                });
+            }
+            sinRuta.forEach(c => filas.push({ c, ruta: null, repartidor: "", estado: "sinruta" }));
+            return { dia, horaSalida, filas, factor };
+        }
+
+        function simTextoRespuesta(f, dia) {
+            const nombre = (f.c.nombre || "").trim().split(/\s+/)[0] || "";
+            const d = dia.replace(/\s+[A-Z]$/, "").trim();
+            return `¡Hola${nombre ? " " + nombre : ""}! 👋 Te saludamos de El Tenate. Para tu entrega del ${d.toLowerCase()} estimamos llegar aproximadamente entre las ${formatearHora(f.desde)} y las ${formatearHora(f.hasta)} (hora aproximada, el mismo día te confirmamos). ¡Gracias por tu preferencia! 🧺🚛`;
+        }
+        function simCopiar(id) {
+            const f = simResultados && simResultados.filas.find(x => String(x.c.id) === String(id));
+            if (!f) return;
+            const t = simTextoRespuesta(f, simResultados.dia);
+            const ok = () => { const b = document.getElementById("sim-cp-" + id); if (b) { const o = b.textContent; b.textContent = "✓ Copiado"; setTimeout(() => { b.textContent = o; }, 1500); } };
+            if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok, () => prompt("Copia el mensaje:", t));
+            else prompt("Copia el mensaje:", t);
+        }
+        function simWhatsapp(id) {
+            const f = simResultados && simResultados.filas.find(x => String(x.c.id) === String(id));
+            if (!f) return;
+            const d = String(f.c.telefono || "").replace(/\D/g, "");
+            if (!d) { alert("Este cliente no tiene teléfono registrado."); return; }
+            window.open(`https://api.whatsapp.com/send?phone=${d.length === 10 ? "52" + d : d}&text=${encodeURIComponent(simTextoRespuesta(f, simResultados.dia))}`, "_blank", "noopener");
+        }
+
+        function renderSimuladorAdmin(cuerpo, titulo) {
+            titulo.innerHTML = `Simular llegadas<small>Calcula una hora aproximada para un día</small>`;
+            if (cuerpo.dataset.sim === "1") return; // ya construido: no se reinicia cada 2 s
+            cuerpo.dataset.sim = "1";
+            const dias = simDiasDisponibles();
+            if (!simEstado.dia || !dias.includes(simEstado.dia)) simEstado.dia = (diaActivoFiltrado !== "todos" && dias.includes(diaActivoFiltrado)) ? diaActivoFiltrado : (dias[0] || "");
+            if (!simEstado.hora) simEstado.hora = (document.getElementById("hora-salida-ruta") || {}).value || "08:00";
+            simResultados = null;
+            cuerpo.innerHTML = dias.length === 0 ? '<div class="vacio">No hay clientes con día asignado para simular.</div>' : `
+                <div class="sim-form">
+                    <label>Día de entrega
+                        <select id="sim-dia">${dias.map(d => `<option value="${escAdm(d)}" ${d === simEstado.dia ? "selected" : ""}>${escAdm(d)}</option>`).join("")}</select>
+                    </label>
+                    <label>Hora de salida
+                        <input type="time" id="sim-hora" value="${escAdm(simEstado.hora)}">
+                    </label>
+                </div>
+                <button class="verMapa" id="sim-btn" onclick="simEjecutar()">🔮 Calcular llegadas</button>
+                <input type="search" id="sim-buscar" class="sim-buscar" placeholder="Buscar cliente por nombre…" oninput="simEstado.buscar=this.value; simPintar()">
+                <div id="sim-res"><div class="vacio">Elige el día y la hora de salida, y pulsa <b>Calcular llegadas</b>.</div></div>`;
+            const sd = document.getElementById("sim-dia"), sh = document.getElementById("sim-hora");
+            if (sd) sd.onchange = () => { simEstado.dia = sd.value; simResultados = null; document.getElementById("sim-res").innerHTML = '<div class="vacio">Pulsa <b>Calcular llegadas</b> para el día elegido.</div>'; };
+            if (sh) sh.onchange = () => { simEstado.hora = sh.value; };
+        }
+        async function simEjecutar() {
+            const btn = document.getElementById("sim-btn"), res = document.getElementById("sim-res");
+            const dia = document.getElementById("sim-dia").value, hora = document.getElementById("sim-hora").value || "08:00";
+            simEstado.dia = dia; simEstado.hora = hora;
+            btn.disabled = true; btn.textContent = "Calculando…";
+            res.innerHTML = '<div class="vacio">Calculando recorridos…</div>';
+            simAbierto = null;
+            try { simResultados = await simularLlegadasDia(dia, hora); } catch (e) { simResultados = null; res.innerHTML = '<div class="vacio">No se pudo calcular. Revisa tu conexión e inténtalo de nuevo.</div>'; }
+            btn.disabled = false; btn.textContent = "🔮 Calcular llegadas";
+            simPintar();
+        }
+        let simAbierto = null;
+        function simToggle(id) { simAbierto = (String(simAbierto) === String(id)) ? null : id; simPintar(); }
+        function simPintar() {
+            const res = document.getElementById("sim-res");
+            if (!res || !simResultados) return;
+            if (!simResultados.filas.length) { res.innerHTML = '<div class="vacio">No hay clientes para ese día.</div>'; return; }
+            const q = (simEstado.buscar || "").toLowerCase().trim();
+            const coincide = f => !q || (f.c.nombre || "").toLowerCase().includes(q);
+            const aprox = simResultados.filas.some(f => f.aprox);
+            let html = `<div class="sim-nota">Salida ${escAdm(simResultados.horaSalida)} · ${escAdm(simResultados.dia)}. Estimación con el orden actual de cada ruta y tráfico típico; puede variar.${aprox ? " <b>Sin conexión al mapa: cálculo aproximado.</b>" : ""} Toca un cliente para responderle.</div>`;
+            const fila = (f, n, color) => {
+                const c = f.c, id = escAdm(String(c.id));
+                const pk = c.pedido ? `<span class="pkg">📦 ${escAdm(c.pedido)}</span>` : "";
+                const nt = (c.notas && String(c.notas).trim()) ? `<span class="nota">📝 ${escAdm(String(c.notas).trim())}</span>` : "";
+                const abierto = String(simAbierto) === String(c.id) && f.estado === "ok";
+                let der;
+                if (f.estado === "ok") der = `<div class="sim-eta"><b>${formatearHora(f.min)}</b><small>${formatearHora(f.desde)} – ${formatearHora(f.hasta)}</small></div>`;
+                else der = `<span class="est pen">${f.estado === "sinruta" ? "Sin ruta" : f.estado === "sinubicacion" ? "Sin ubicación" : "✓ Entregado"}</span>`;
+                const acc = abierto ? `<div class="sim-acc"><button id="sim-cp-${id}" onclick="event.stopPropagation(); simCopiar('${id}')">📋 Copiar mensaje</button><button onclick="event.stopPropagation(); simWhatsapp('${id}')">💬 WhatsApp</button></div>` : "";
+                return `<div class="cli sim ${abierto ? "open" : ""} ${f.estado === "entregado" ? "done" : ""}" role="button" tabindex="0" ${f.estado === "ok" ? `onclick="simToggle('${id}')"` : ""}>
+                    <div class="num" style="background:${color}">${n}</div>
+                    <div class="tx"><b>${escAdm(c.nombre)}${pk}</b><small>${escAdm(c.direccion || "")}</small>${nt}${acc}</div>${der}</div>`;
+            };
+            const rutas = [...new Set(simResultados.filas.filter(f => f.ruta).map(f => f.ruta))].sort((a, b) => a - b);
+            rutas.forEach(num => {
+                const color = obtenerColorRuta(num - 1);
+                const todas = simResultados.filas.filter(f => f.ruta === num);
+                const rep = (todas.find(f => f.repartidor) || {}).repartidor || "";
+                const ok = todas.filter(f => f.estado === "ok").sort((a, b) => a.min - b.min);
+                const resto = todas.filter(f => f.estado !== "ok");
+                const visibles = [...ok, ...resto].filter(coincide);
+                if (!visibles.length) return;
+                const rango = ok.length ? `${formatearHora(ok[0].min)} → ${formatearHora(ok[ok.length - 1].min)}` : "—";
+                html += `<div class="sim-grupo"><div class="sim-cab" style="border-left-color:${color}"><span class="dot" style="background:${color}"></span><div><b>Ruta ${num}${rep ? " · " + escAdm(rep) : ""}</b><small>${plAdm(todas.length, "cliente")} · llegadas ${rango}</small></div></div>`;
+                html += visibles.map((f, i) => fila(f, f.estado === "ok" ? ok.indexOf(f) + 1 : "•", color)).join("") + `</div>`;
+            });
+            const sinRuta = simResultados.filas.filter(f => !f.ruta && coincide(f));
+            if (sinRuta.length) {
+                html += `<div class="sim-grupo"><div class="sim-cab" style="border-left-color:#95a5a6"><span class="dot" style="background:#95a5a6"></span><div><b>Clientes sin ruta</b><small>${plAdm(sinRuta.length, "cliente")} · no se puede estimar</small></div></div>`;
+                html += sinRuta.map(f => fila(f, "•", "#95a5a6")).join("") + `</div>`;
+            }
+            if (html.indexOf("sim-grupo") < 0) html += '<div class="vacio">Ningún cliente coincide con la búsqueda.</div>';
+            res.innerHTML = html;
+        }
+
         function masCambiarHora(v) {
             const o = document.getElementById("hora-salida-ruta");
             if (o) o.value = v;
@@ -3338,7 +3549,8 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             }
             const h = document.getElementById("hora-salida-ruta");
             const inp = document.getElementById("mas-inp-hora");
-            if (h && inp) { inp.value = h.value; const sh = document.getElementById("mas-sub-hora"); if (sh) sh.textContent = h.value || "Sin definir"; }
+            if (h && inp) { if (horaSalidaEditadaManualmente) h.value = horaSalidaRuta; inp.value = h.value; const sh = document.getElementById("mas-sub-hora"); if (sh) sh.textContent = horaSalidaEditadaManualmente ? horaSalidaRuta + " · fija" : "Automática (" + (h.value || "ahora") + ")"; }
+            const fa = document.getElementById("mas-fila-auto"); if (fa) fa.style.display = horaSalidaEditadaManualmente ? "" : "none";
         }
 
         function sincronizarChipDiaAdmin() {
@@ -3538,6 +3750,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             const cuerpo = document.getElementById("adm-det-cuerpo");
             const titulo = document.getElementById("adm-det-titulo");
             if (!cuerpo || !admDetalle) return;
+            if (admDetalle.tipo === "simular") { renderSimuladorAdmin(cuerpo, titulo); return; }
             const nombres = construirMapaNombresPorRuta();
             if (admDetalle.tipo === "sinruta") {
                 const lista = clientesSinRutaFiltrados();
