@@ -508,6 +508,7 @@
             #app-cliente-num { width: 34px; height: 34px; border-radius: 50%; background: #5a3d26; color: #fff; display: grid; place-items: center; font-weight: 800; flex-shrink: 0; }
             #app-cliente-nombre { font-weight: 700; font-size: 15px; color: #3b2a1c; }
             #app-cliente-dir { font-size: 12px; color: #7a6350; }
+            #app-cliente-notas { margin-top: 4px; padding: 3px 8px; border-radius: 8px; background: #fbf1dc; color: #6b4a22; font-size: 12px; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
             body.vista-repartidor #app-acciones { display: flex; gap: 8px; }
             #app-acciones a {
                 flex: 1; text-align: center; border-radius: 14px; padding: 10px 0; font-size: 12.5px; font-weight: 700;
@@ -752,6 +753,7 @@
             #adm-detalle .cli .tx { min-width: 0; flex: 1; }
             #adm-detalle .cli b { display: block; font-size: 14px; color: #3b2a1c; }
             #adm-detalle .cli b .pkg { display: inline-block; margin-left: 6px; padding: 2px 8px; border-radius: 999px; background: #f1e4d0; color: #6b4a22; font-size: 11px; font-weight: 700; vertical-align: 1px; text-decoration: none; }
+            #adm-detalle .cli .nota { display: block; margin-top: 3px; padding: 3px 8px; border-radius: 8px; background: #fbf1dc; color: #6b4a22; font-size: 12px; font-weight: 600; line-height: 1.3; white-space: normal; overflow-wrap: anywhere; }
             #adm-detalle .cli small { display: block; font-size: 12px; color: #8a7560; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
             #adm-detalle .est { font-size: 11.5px; font-weight: 700; border-radius: 999px; padding: 4px 9px; white-space: nowrap; }
             #adm-detalle .est.ok { background: #e7f3e4; color: #2f7a3c; }
@@ -1096,7 +1098,7 @@
             </div>
             <div id="app-cliente-card" class="app-solo-movil" style="display:none;">
                 <div id="app-cliente-num">–</div>
-                <div style="min-width:0;"><div id="app-cliente-nombre">—</div><div id="app-cliente-dir">—</div></div>
+                <div style="min-width:0;"><div id="app-cliente-nombre">—</div><div id="app-cliente-dir">—</div><div id="app-cliente-notas" style="display:none;"></div></div>
             </div>
             <div id="app-acciones" class="app-solo-movil">
                 <a id="app-btn-llamar" href="#">📞 Llamar</a>
@@ -3550,7 +3552,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                     const dia = c.dia ? escAdm(c.dia) : "Sin día";
                     return `<div class="cli" role="button" tabindex="0" onclick="enfocarEnMapaAdmin(${lat}, ${lng})">
                         <div class="num" style="background:#95a5a6">${i + 1}</div>
-                        <div class="tx"><b>${escAdm(c.nombre)}${pk}</b><small>${escAdm([c.direccion, dia].filter(Boolean).join(" · "))}</small></div>
+                        <div class="tx"><b>${escAdm(c.nombre)}${pk}</b><small>${escAdm([c.direccion, dia].filter(Boolean).join(" · "))}</small>${(c.notas && String(c.notas).trim()) ? `<span class="nota">📝 ${escAdm(String(c.notas).trim())}</span>` : ""}</div>
                         <span class="est pen">${(c.lat === null || c.lng === null) ? "Sin ubicación" : "Sin ruta"}</span></div>`;
                 }).join("");
                 cuerpo.innerHTML = html;
@@ -3588,17 +3590,18 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                     const lat = (c.lat !== null && c.lat !== undefined) ? c.lat : "null";
                     const lng = (c.lng !== null && c.lng !== undefined) ? c.lng : "null";
                     const pk = c.pedido ? `<span class="pkg">📦 ${escAdm(c.pedido)}</span>` : "";
+                    const nt = (c.notas && String(c.notas).trim()) ? `<span class="nota">📝 ${escAdm(String(c.notas).trim())}</span>` : "";
                     if (admReordenar) {
                         const pos = movibles.indexOf(c);
                         const mv = c.entregado ? `<span class="est ok">✓ Entregado</span>` : `<div class="mv"><button aria-label="Subir" ${pos <= 0 ? "disabled" : ""} onclick="admMoverCliente(${idx}, '${c.id}', -1)">▲</button><button aria-label="Bajar" ${pos === movibles.length - 1 ? "disabled" : ""} onclick="admMoverCliente(${idx}, '${c.id}', 1)">▼</button></div>`;
                         return `<div class="cli mov ${c.entregado ? "done" : ""} ${String(admUltimoMovido) === String(c.id) ? "movido" : ""}" data-cid="${c.id}">
                             <div class="num" style="background:${color}">${escAdm(c.cte ?? "•")}</div>
-                            <div class="tx"><b>${escAdm(c.nombre)}${pk}</b><small>${escAdm(sub)}</small></div>
+                            <div class="tx"><b>${escAdm(c.nombre)}${pk}</b><small>${escAdm(sub)}</small>${nt}</div>
                             ${(!c.entregado) ? `<span class="eta" title="Hora estimada de llegada">${(admPines[idx] && admPines[idx][c.id] !== undefined) ? "📌 " : ""}${eta ? escAdm(eta) : "—"}</span>` : ""}${mv}</div>`;
                     }
                     return `<div class="cli ${c.entregado ? "done" : ""}" role="button" tabindex="0" onclick="enfocarEnMapaAdmin(${lat}, ${lng})">
                         <div class="num" style="background:${color}">${escAdm(c.cte ?? "•")}</div>
-                        <div class="tx"><b>${escAdm(c.nombre)}${pk}</b><small>${escAdm(sub)}</small></div>
+                        <div class="tx"><b>${escAdm(c.nombre)}${pk}</b><small>${escAdm(sub)}</small>${nt}</div>
                         <span class="est ${c.entregado ? "ok" : "pen"}">${c.entregado ? "✓ Entregado" : "Pendiente"}</span></div>`;
                 }).join("");
                 cuerpo.innerHTML = html;
@@ -3907,6 +3910,10 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                 document.getElementById("app-cliente-num").textContent = (cliente.cte !== undefined && cliente.cte !== null && cliente.cte !== "") ? cliente.cte : "•";
                 document.getElementById("app-cliente-nombre").textContent = cliente.nombre || "Cliente";
                 document.getElementById("app-cliente-dir").textContent = cliente.direccion || "";
+                const elNotas = document.getElementById("app-cliente-notas");
+                const txtNotas = (cliente.notas && String(cliente.notas).trim()) ? String(cliente.notas).trim() : "";
+                elNotas.textContent = txtNotas ? "📝 " + txtNotas : "";
+                elNotas.style.display = txtNotas ? "block" : "none";
                 const tel = (cliente.telefono || "").toString();
                 const llamar = document.getElementById("app-btn-llamar");
                 const wa = document.getElementById("app-btn-whatsapp");
