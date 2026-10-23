@@ -918,7 +918,44 @@
             #app-acciones a:hover { background: #eadbc6; }
             #app-btn-entregar:hover, .verMapa:hover { filter: brightness(1.08); }
         }
-    </style>
+            /* Escritorio (mouse): el selector de hora debe verse y abrirse al hacer clic; en táctil queda la fila entera como botón */
+        @media (hover: hover) and (pointer: fine) {
+            .mas-fila input[type=time] { position: static !important; inset: auto !important; opacity: 1 !important; width: auto !important; height: 38px !important; flex-shrink: 0; font-size: 15px !important; font-family: inherit; color: #3b2a1c; background: #fff; border: 1px solid #d9c7ae !important; border-radius: 8px; padding: 0 8px; cursor: pointer; }
+        }
+
+        /* ══ Modo navegación (vista repartidor) ══ */
+        #map.nav-rot { transition: transform .7s linear; will-change: transform; }
+        #map.nav-rot .leaflet-control-container { display: none; }
+        #map.nav-rot .leaflet-marker-icon:not(.flecha-ruta) > * { rotate: var(--brg, 0deg); transform-origin: var(--ox, 50%) var(--oy, 50%); transition: rotate .7s linear; }
+        #map.nav-rot .leaflet-popup-content-wrapper { rotate: var(--brg, 0deg); transform-origin: 50% calc(100% + 20px); }
+        #map.nav-rot .leaflet-popup-tip-container { rotate: var(--brg, 0deg); transform-origin: 50% 100%; }
+        #map.nav-rot .leaflet-popup-close-button { display: none; }
+        .nav-veh { width: 44px; height: 44px; position: relative; }
+        .nav-veh .halo { position: absolute; inset: 2px; border-radius: 50%; background: rgba(31,111,235,.22); animation: navPulso 2s ease-out infinite; }
+        .nav-veh svg { position: relative; display: block; filter: drop-shadow(0 2px 3px rgba(0,0,0,.45)); }
+        @keyframes navPulso { 0% { transform: scale(.55); opacity: .9; } 100% { transform: scale(1.35); opacity: 0; } }
+        #nav-attrib { display: none; position: absolute; right: 6px; bottom: calc(var(--sheet-h, 120px) + 4px); font-size: 10px; background: rgba(255,255,255,.8); padding: 1px 6px; border-radius: 4px; z-index: 900; color: #444; }
+        #map-wrapper.nav-rot-w #nav-attrib { display: block; }
+        #nav-maniobra { display: none; position: absolute; top: 80px; left: 10px; right: 10px; z-index: 1000; background: #4a3220; color: #fff8ee; border-radius: 16px; box-shadow: 0 4px 14px rgba(0,0,0,.35); padding: 10px 14px; align-items: center; gap: 14px; }
+        #nav-maniobra.visible { display: flex; }
+        #nav-maniobra .nm-ic { width: 52px; height: 52px; border-radius: 14px; background: rgba(255,255,255,.14); display: grid; place-items: center; flex-shrink: 0; }
+        #nav-maniobra .nm-ic svg { width: 40px; height: 40px; stroke: #fff; fill: none; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+        #nav-maniobra .nm-tx { min-width: 0; flex: 1; }
+        #nav-maniobra #nm-dist { display: block; font-size: 26px; font-weight: 800; line-height: 1.05; }
+        #nav-maniobra #nm-instr { display: block; font-size: 15px; font-weight: 700; margin-top: 2px; }
+        #nav-maniobra #nm-calle { display: block; font-size: 13px; opacity: .8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+        #nav-maniobra.recalc { background: #7a5a3a; }
+        #nav-maniobra.recalc #nm-dist { font-size: 18px; }
+        @media (max-width: 768px) and (orientation: portrait) { body.vista-repartidor.tab-clientes #nav-maniobra { display: none !important; } }
+        @media (max-height: 540px) and (orientation: landscape) { #nav-maniobra { top: 72px; padding: 6px 12px; } #nav-maniobra .nm-ic { width: 40px; height: 40px; } #nav-maniobra .nm-ic svg { width: 30px; height: 30px; } #nav-maniobra #nm-dist { font-size: 20px; } #nav-maniobra #nm-instr { font-size: 13px; } }
+        #btn-nav-modo.activo { background: #4a3220 !important; color: #fff !important; }
+        @media (max-height: 540px) and (orientation: landscape) {
+            body.vista-repartidor #nav-botones-circulares { top: 70px !important; bottom: auto !important; right: 8px !important; gap: 6px !important; }
+            body.vista-repartidor #nav-botones-circulares button { width: 36px !important; height: 36px !important; font-size: 15px !important; }
+            body.vista-repartidor #btn-reopt-circular { display: none !important; }
+            #nav-maniobra { right: 54px; }
+        }
+</style>
 </head>
 <body>
 
@@ -970,7 +1007,7 @@
         <div id="drawer-body-repartidor"></div>
         <div id="drawer-lista">
             <label class="mas-fila"><span class="ic"><span class="cal-mini"><i id="drw-cal-mes">oct</i><b id="drw-cal-dia">1</b></span></span><span class="tx"><b>Filtrar por día</b><small id="drw-sub-dia">Todos los días</small></span><select id="drw-sel-dia" onchange="drwCambiarDia(this.value)" aria-label="Filtrar por día"></select></label>
-            <label class="mas-fila"><span class="ic">🕒</span><span class="tx"><b>Hora de salida a ruta</b><small id="drw-sub-hora">Automática</small></span><input type="time" id="drw-inp-hora" onchange="drwCambiarHora(this.value)" aria-label="Hora de salida a ruta"></label>
+            <label class="mas-fila"><span class="ic">🕒</span><span class="tx"><b>Hora de salida a ruta</b><small id="drw-sub-hora">Automática</small></span><input type="time" id="drw-inp-hora" onclick="try{this.showPicker()}catch(e){}" onchange="drwCambiarHora(this.value)" aria-label="Hora de salida a ruta"></label>
             <button class="mas-fila" id="drw-fila-auto" style="display:none" onclick="restablecerHoraSalidaAuto()"><span class="ic">↺</span><span class="tx"><b>Volver a hora automática</b><small>Usar la hora actual del dispositivo</small></span></button>
             <button class="mas-fila" onclick="cerrarDrawerRepartidor(); reoptimizarRutaDesdeUbicacionActual()"><span class="ic">⚡</span><span class="tx"><b>Reoptimizar mi ruta</b><small>Desde mi ubicación (GPS)</small></span></button>
             <button class="mas-fila" onclick="cerrarDrawerRepartidor(); regresarAPantallaDeRoles()"><span class="ic">🚪</span><span class="tx"><b>Salir</b></span></button>
@@ -1050,7 +1087,7 @@
             <div id="adm-mas-lista" class="adm-solo-movil">
                 <button class="mas-fila" onclick="importarDatosDesdeSheetsConReintentos()"><span class="ic">🔄</span><span class="tx"><b>Sincronizar Google Sheets</b><small>Actualizar clientes y pedidos</small></span></button>
                 <button class="mas-fila" onclick="cambiarTabAdmin({tipo:'simular'})"><span class="ic">🔮</span><span class="tx"><b>Simular llegadas</b><small>Responder a un cliente: día y hora estimada</small></span></button>
-                <label class="mas-fila"><span class="ic">🕒</span><span class="tx"><b>Hora de salida a ruta</b><small id="mas-sub-hora">Automática</small></span><input type="time" id="mas-inp-hora" onchange="masCambiarHora(this.value)" aria-label="Hora de salida a ruta"></label>
+                <label class="mas-fila"><span class="ic">🕒</span><span class="tx"><b>Hora de salida a ruta</b><small id="mas-sub-hora">Automática</small></span><input type="time" id="mas-inp-hora" onclick="try{this.showPicker()}catch(e){}" onchange="masCambiarHora(this.value)" aria-label="Hora de salida a ruta"></label>
                 <button class="mas-fila" id="mas-fila-auto" style="display:none" onclick="restablecerHoraSalidaAuto()"><span class="ic">↺</span><span class="tx"><b>Volver a hora automática</b><small>Usar la hora actual del dispositivo</small></span></button>
                 <button class="mas-fila" onclick="mostrarCierreDia()"><span class="ic">📋</span><span class="tx"><b>Cierre de día</b></span></button>
                 <label class="mas-fila"><span class="ic">👁️</span><span class="tx"><b>Modo vista repartidor</b><small id="mas-sub-vista">Todas las rutas</small></span><select id="mas-sel-vista" onchange="masCambiarVista(this.value)" aria-label="Modo vista repartidor"></select></label>
@@ -1100,8 +1137,11 @@
         </div>
 
         <script>document.querySelectorAll(".header-logo").forEach(function(i){var g=document.querySelector(".gate-logo"); if(g) i.src=g.src;});</script>
+        <div id="nav-maniobra" aria-live="polite"><div class="nm-ic" id="nm-icono"></div><div class="nm-tx"><span id="nm-dist">—</span><span id="nm-instr"></span><span id="nm-calle"></span></div></div>
+        <div id="nav-attrib">© OpenStreetMap</div>
                 <!-- Botones circulares flotantes -->
         <div id="nav-botones-circulares" style="display:none; flex-direction:column; gap:10px; position:absolute; right:12px; bottom:170px; z-index:1000;">
+            <button id="btn-nav-modo" onclick="navToggleModo()" title="Modo navegación (el mapa gira contigo)" style="width:44px; height:44px; border-radius:50%; background:#fff; border:none; box-shadow:0 2px 8px rgba(0,0,0,0.3); font-size:18px; cursor:pointer;">🧭</button>
             <button id="btn-centrar-circular" onclick="activarSeguimientoCamara()" title="Centrar en mi ubicación" style="width:44px; height:44px; border-radius:50%; background:#fff; border:none; box-shadow:0 2px 8px rgba(0,0,0,0.3); font-size:18px; cursor:pointer;">📍</button>
             <button id="btn-ver-ruta-completa" onclick="verRutaCompleta()" title="Ver ruta completa" style="width:44px; height:44px; border-radius:50%; background:#fff; border:none; box-shadow:0 2px 8px rgba(0,0,0,0.3); font-size:18px; cursor:pointer;">🗺️</button>
             <button id="btn-reopt-circular" class="app-solo-movil" onclick="reoptimizarRutaDesdeUbicacionActual()" title="Reoptimizar mi ruta" style="width:44px; height:44px; border-radius:50%; background:#fff; border:none; box-shadow:0 2px 8px rgba(0,0,0,0.3); font-size:18px; cursor:pointer;">🔄</button>
@@ -2631,6 +2671,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                 redibujando = true;
                 try {
                     flechas.clearLayers();
+                    if (navModoActivo && _tramo) return; // con el tramo actual resaltado, las flechas van en ese tramo
                     const z = map.getZoom();
                     const vista = map.getPixelBounds().pad(0.25);
                     const pts = coords.map(c => map.project(L.latLng(c[1], c[0]), z));
@@ -2657,6 +2698,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                     }
                 } finally { redibujando = false; }
             }
+            grupo.redibujarFlechas = redibujar;
             grupo.on("add", () => { map.on("zoomend moveend", redibujar); redibujar(); });
             grupo.on("remove", () => { map.off("zoomend moveend", redibujar); });
             return grupo;
@@ -3116,7 +3158,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                 position => {
                     const idxRuta = parseInt(rutaActivaFiltrada);
                     if (!isNaN(idxRuta)) enviarUbicacionAlBackend(position.coords.latitude, position.coords.longitude, idxRuta);
-                    seguirCamaraConGPS(position.coords.latitude, position.coords.longitude, position.coords.heading);
+                    seguirCamaraConGPS(position.coords.latitude, position.coords.longitude, position.coords.heading, position.coords.speed);
                 },
                 () => {}, { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
             );
@@ -3125,7 +3167,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                 position => {
                     // Seguimiento del mapa: ligero, corre en CADA actualización de GPS
                     // (no cada 150m/60s), sin tocar rutas ni Sheets.
-                    seguirCamaraConGPS(position.coords.latitude, position.coords.longitude, position.coords.heading);
+                    seguirCamaraConGPS(position.coords.latitude, position.coords.longitude, position.coords.heading, position.coords.speed);
                     // El reordenamiento sigue exactamente igual que antes, sin cambios.
                     manejarNuevaPosicionGPSVivo(position.coords.latitude, position.coords.longitude);
                 },
@@ -3139,9 +3181,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             ultimaPosicionRecalculada = null;
             ultimoRumboConocido = null;
             posicionAnteriorParaRumbo = null;
-            if (typeof map.setBearing === "function") {
-                try { map.setBearing(0); } catch (e) {}
-            }
+            navLimpiarTodo();
         }
 
         function manejarNuevaPosicionGPSVivo(lat, lng) {
@@ -3189,7 +3229,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
         let ultimoRumboConocido = null;
         let posicionAnteriorParaRumbo = null;
 
-        function seguirCamaraConGPS(lat, lng, headingGPS) {
+        function seguirCamaraConGPS(lat, lng, headingGPS, velocidadMs) {
             if (ROL_ACTUAL !== "repartidor") return;
 
             // Determinar hacia dónde apunta el camión: se prioriza el "heading" que
@@ -3198,24 +3238,28 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             // comparando contra la posición anterior — solo si se movió lo suficiente para
             // que el cálculo tenga sentido (con GPS quieto, el rumbo calculado es ruido).
             let rumbo = ultimoRumboConocido;
-            if (typeof headingGPS === "number" && !isNaN(headingGPS)) {
+            if (typeof headingGPS === "number" && !isNaN(headingGPS) && (typeof velocidadMs !== "number" || isNaN(velocidadMs) || velocidadMs >= 1.2)) {
                 rumbo = headingGPS;
             } else if (posicionAnteriorParaRumbo) {
                 const dist = distanciaMetrosEntreCoords(lat, lng, posicionAnteriorParaRumbo.lat, posicionAnteriorParaRumbo.lng);
-                if (dist >= 5) {
+                if (dist >= (navModoActivo ? 8 : 5)) {
                     rumbo = calcularRumbo(posicionAnteriorParaRumbo.lat, posicionAnteriorParaRumbo.lng, lat, lng);
                 }
             }
             if (rumbo !== null) ultimoRumboConocido = rumbo;
-            posicionAnteriorParaRumbo = { lat, lng };
+            if (!posicionAnteriorParaRumbo || distanciaMetrosEntreCoords(lat, lng, posicionAnteriorParaRumbo.lat, posicionAnteriorParaRumbo.lng) >= (navModoActivo ? 8 : 5)) posicionAnteriorParaRumbo = { lat, lng };
 
             // Modo navegación: si el plugin de rotación cargó bien, el MAPA gira para que
             // la dirección de avance quede siempre "arriba" (como Maps/Waze), y el ícono
             // se deja fijo apuntando hacia arriba (girar ambos a la vez se vería mal). Si
             // el plugin no cargó por algún motivo, se usa el modo anterior de respaldo:
             // mapa fijo al norte y el ícono girando según el rumbo — nunca se rompe.
-            const hayRotacionDeMapa = typeof map.setBearing === "function";
+            const hayRotacionDeMapa = navModoActivo;
+            if (navModoActivo && seguimientoCamaraActivo) navActualizarRumbo(rumbo);
             const anguloParaIcono = hayRotacionDeMapa ? 0 : rumbo;
+            const iconoVivo = () => navModoActivo
+                ? crearIconoNavegacion(_navRotando ? ((rumbo !== null && _navBrg !== null) ? ((rumbo - _navBrg + 540) % 360 - 180) : 0) : (rumbo || 0))
+                : crearIconoRepartidorEnVivo(anguloParaIcono);
 
             // El ícono del repartidor se mueve en CADA actualización de GPS (no cada
             // 150m/1min como el resto), para que se sienta en tiempo real igual que el
@@ -3224,16 +3268,13 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             // posición real sin importar si el mapa lo está siguiendo o no).
             if (marcadorMiGpsActual) {
                 marcadorMiGpsActual.setLatLng([lat, lng]);
-                marcadorMiGpsActual.setIcon(crearIconoRepartidorEnVivo(anguloParaIcono));
+                marcadorMiGpsActual.setIcon(iconoVivo());
             } else {
-                marcadorMiGpsActual = L.marker([lat, lng], { icon: crearIconoRepartidorEnVivo(anguloParaIcono) }).addTo(map);
+                marcadorMiGpsActual = L.marker([lat, lng], { icon: iconoVivo() }).addTo(map);
             }
+            if (navModoActivo) { navCorregirOrigenIconos(); navProcesarPosicion(lat, lng); }
 
             if (!seguimientoCamaraActivo) return;
-
-            if (hayRotacionDeMapa && rumbo !== null) {
-                try { map.setBearing(rumbo); } catch (e) { console.warn("No se pudo rotar el mapa:", e); }
-            }
 
             const idxRuta = parseInt(rutaActivaFiltrada);
             if (isNaN(idxRuta) || !rutasEstructuradas[idxRuta]) return;
@@ -3249,13 +3290,320 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                 if (d < distanciaMasCercana) distanciaMasCercana = d;
             });
 
-            const zoom = calcularZoomSegunDistancia(distanciaMasCercana);
+            const zoom = navZoomObjetivo(calcularZoomSegunDistancia(distanciaMasCercana));
             _cambioMapaProgramatico = true;
             map.setView([lat, lng], zoom, { animate: true });
             setTimeout(() => { _cambioMapaProgramatico = false; }, 400); // tras la animación de setView
 
             actualizarBarraNavegacionRepartidor();
         }
+
+
+        // ══════════════ MODO NAVEGACIÓN (estilo Google Maps) ══════════════
+        // 1) El mapa gira con el rumbo del repartidor (adelante = arriba) y su posición queda en el
+        //    tercio inferior de la zona visible. 2) Se resalta solo el TRAMO ACTUAL (hasta el próximo
+        //    cliente), recortado conforme avanza; el resto de la ruta queda como guía tenue. 3) Un banner
+        //    indica la próxima maniobra con distancia. 4) Zoom automático por cercanía a la maniobra y
+        //    recálculo si el repartidor se sale de la ruta. Se puede apagar con el botón 🧭.
+        let navModoActivo = true;
+        try { navModoActivo = localStorage.getItem("tenate_nav") !== "0"; } catch (e) {}
+        let _navBrg = null, _navRotando = false, _navLayout = {};
+        let _tramo = null, _tramoSolicitando = false, _tramoUltimoPedido = 0;
+        let _navZoomUltimoCambio = 0;
+
+        function navPivote() {
+            const w = document.getElementById("map-wrapper"); if (!w) return null;
+            const r = w.getBoundingClientRect(); const W = r.width, H = r.height; if (!W || !H) return null;
+            const top = document.getElementById("nav-barra-superior"), sh = document.getElementById("nav-barra-inferior");
+            let vTop = 96, vBot = H - 150;
+            if (top && top.offsetParent !== null) vTop = top.getBoundingClientRect().bottom - r.top + 78;
+            if (sh && sh.offsetParent !== null) vBot = sh.getBoundingClientRect().top - r.top - 14;
+            vTop = Math.min(vTop, H * 0.45); vBot = Math.max(vBot, vTop + 80);
+            const px = W / 2, py = vTop + 0.68 * (vBot - vTop);
+            const d = 2 * Math.ceil(Math.max(Math.hypot(px, py), Math.hypot(W - px, py), Math.hypot(px, H - py), Math.hypot(W - px, H - py))) + 24;
+            return { px: Math.round(px), py: Math.round(py), d };
+        }
+        function navAplicarLayout(forzar) {
+            const L0 = navPivote(); if (!L0) return;
+            if (!forzar && Math.abs(L0.d - (_navLayout.d || 0)) <= 2 && Math.abs(L0.px - _navLayout.px) <= 2 && Math.abs(L0.py - _navLayout.py) <= 2) return;
+            _navLayout = L0;
+            const el = map.getContainer(), w = document.getElementById("map-wrapper");
+            w.style.overflow = "hidden"; w.classList.add("nav-rot-w");
+            Object.assign(el.style, { position: "absolute", flex: "none", width: L0.d + "px", height: L0.d + "px", left: (L0.px - L0.d / 2) + "px", top: (L0.py - L0.d / 2) + "px" });
+            map.invalidateSize({ animate: false });
+        }
+        function navCorregirOrigenIconos() {
+            map.eachLayer(l => {
+                const ic = l._icon; if (!ic) return;
+                const k = ic.style.marginLeft + "|" + ic.style.marginTop;
+                if (ic.dataset.nok === k) return;
+                ic.style.setProperty("--ox", (-parseFloat(ic.style.marginLeft || 0)) + "px");
+                ic.style.setProperty("--oy", (-parseFloat(ic.style.marginTop || 0)) + "px");
+                ic.dataset.nok = k;
+            });
+        }
+        function navEntrarRotacion() {
+            if (_navRotando) return;
+            _navRotando = true;
+            const el = map.getContainer();
+            el.classList.add("nav-rot");
+            map._navOpc = { t: map.options.touchZoom, s: map.options.scrollWheelZoom, d: map.options.doubleClickZoom };
+            map.options.touchZoom = "center"; map.options.scrollWheelZoom = "center"; map.options.doubleClickZoom = "center";
+            navAplicarLayout(true);
+        }
+        function navSalirRotacion() {
+            if (!_navRotando) return;
+            _navRotando = false; _navBrg = null; _navLayout = {};
+            const el = map.getContainer(), w = document.getElementById("map-wrapper");
+            el.classList.remove("nav-rot");
+            ["position", "flex", "width", "height", "left", "top", "transform", "transition"].forEach(k => el.style[k] = "");
+            el.style.removeProperty("--brg");
+            if (w) { w.style.overflow = ""; w.classList.remove("nav-rot-w"); }
+            if (map._navOpc) { map.options.touchZoom = map._navOpc.t; map.options.scrollWheelZoom = map._navOpc.s; map.options.doubleClickZoom = map._navOpc.d; }
+            map.eachLayer(l => { if (l._icon) { l._icon.style.removeProperty("--ox"); l._icon.style.removeProperty("--oy"); delete l._icon.dataset.nok; } });
+            map.invalidateSize({ animate: false });
+        }
+        // Compatibilidad: el código anterior llama map.setBearing(0) para volver al norte arriba
+        map.setBearing = function (b) { if (!b) navSalirRotacion(); };
+
+        function navActualizarRumbo(rumbo) {
+            if (!navModoActivo) return;
+            if (!_navRotando) navEntrarRotacion(); else navAplicarLayout(false);
+            if (typeof rumbo === "number" && !isNaN(rumbo)) {
+                if (_navBrg === null) _navBrg = rumbo;
+                else {
+                    const delta = ((rumbo - _navBrg) % 360 + 540) % 360 - 180;
+                    if (Math.abs(delta) >= 3) _navBrg += delta * 0.6;
+                }
+            } else if (_navBrg === null) _navBrg = 0;
+            const el = map.getContainer();
+            el.style.transform = "rotate(" + (-_navBrg) + "deg)";
+            el.style.setProperty("--brg", _navBrg + "deg");
+            navCorregirOrigenIconos();
+        }
+        // Arrastrar con el dedo/mouse sobre un mapa rotado: se corrige la dirección del arrastre
+        (function () {
+            const orig = L.Draggable.prototype._onMove;
+            L.Draggable.prototype._onMove = function (e) {
+                if (_navRotando && _navBrg !== null && this._startPoint && !(e.touches && e.touches.length > 1)) {
+                    const t = (e.touches && e.touches.length === 1) ? e.touches[0] : e;
+                    const dx = t.clientX - this._startPoint.x, dy = t.clientY - this._startPoint.y;
+                    const a = _navBrg * Math.PI / 180, c = Math.cos(a), sn = Math.sin(a);
+                    const ps = this._parentScale || { x: 1, y: 1 };
+                    const cx = this._startPoint.x + (dx * c - dy * sn) * ps.x, cy = this._startPoint.y + (dx * sn + dy * c) * ps.y;
+                    return orig.call(this, { touches: [{ clientX: cx, clientY: cy }], clientX: cx, clientY: cy, type: e.type, target: e.target,
+                        preventDefault: () => { if (e.preventDefault) e.preventDefault(); }, stopPropagation: () => { if (e.stopPropagation) e.stopPropagation(); } });
+                }
+                return orig.call(this, e);
+            };
+        })();
+        window.addEventListener("resize", () => { if (_navRotando) setTimeout(() => navAplicarLayout(true), 120); });
+
+        // ── Tramo actual + maniobras ──
+        function navMetrosEntre(a, b) { return distanciaMetrosEntreCoords(a[1], a[0], b[1], b[0]); }
+        function navTextoPaso(p) {
+            const dir = { "left": "a la izquierda", "right": "a la derecha", "slight left": "ligeramente a la izquierda", "slight right": "ligeramente a la derecha", "sharp left": "cerrado a la izquierda", "sharp right": "cerrado a la derecha" };
+            const m = p.mod || "", d = dir[m] || "";
+            switch (p.tipo) {
+                case "arrive": return "Llegas a tu destino";
+                case "depart": return "Inicia tu recorrido";
+                case "end of road": return d ? "Al final de la calle, gira " + d : "Sigue al frente";
+                case "fork": return d ? "Mantente " + d : "Mantente en el carril";
+                case "merge": return "Incórporate";
+                case "on ramp": return "Toma la incorporación";
+                case "off ramp": return "Toma la salida";
+                case "roundabout": case "rotary": case "roundabout turn": return p.exit ? "En la glorieta, toma la salida " + p.exit : "Entra a la glorieta";
+                case "exit roundabout": case "exit rotary": return "Sal de la glorieta";
+                default:
+                    if (m === "uturn") return "Da vuelta en U";
+                    if (m === "straight" || !m) return "Continúa recto";
+                    return "Gira " + d;
+            }
+        }
+        function navIconoPaso(p) {
+            const m = p.mod || "", t = p.tipo;
+            const recto = '<path d="M12 21V5M6 11l6-6 6 6"/>';
+            let inner;
+            if (t === "arrive") inner = '<path d="M12 21s-6-5.5-6-10a6 6 0 0 1 12 0c0 4.5-6 10-6 10z"/><circle cx="12" cy="11" r="2"/>';
+            else if (t === "roundabout" || t === "rotary" || t === "roundabout turn") inner = '<circle cx="12" cy="14" r="5"/><path d="M12 9V3M9 6l3-3 3 3"/>';
+            else if (m === "uturn") inner = '<path d="M7 21V9a5 5 0 0 1 10 0v6M13 12l4 4 4-4"/>';
+            else if (m === "right") inner = '<path d="M7 21v-7a3 3 0 0 1 3-3h8M14 5l5 6-5 6" transform="translate(0 0)"/>';
+            else if (m === "left") inner = '<path d="M17 21v-7a3 3 0 0 0-3-3H6M10 5l-5 6 5 6"/>';
+            else if (m === "slight right") inner = '<g transform="rotate(45 12 12)">' + recto + '</g>';
+            else if (m === "slight left") inner = '<g transform="rotate(-45 12 12)">' + recto + '</g>';
+            else if (m === "sharp right") inner = '<g transform="rotate(135 12 12)">' + recto + '</g>';
+            else if (m === "sharp left") inner = '<g transform="rotate(-135 12 12)">' + recto + '</g>';
+            else inner = recto;
+            return '<svg viewBox="0 0 24 24">' + inner + '</svg>';
+        }
+        function navFormatoDist(m) {
+            if (m >= 1000) return (m / 1000).toFixed(1) + " km";
+            return (m < 50 ? Math.round(m / 5) * 5 : Math.round(m / 10) * 10) + " m";
+        }
+        function navDistManiobra() {
+            if (!_tramo || !_tramo.pasos.length) return null;
+            const objetivo = _tramo.pasos[Math.min(_tramo.paso + 1, _tramo.pasos.length - 1)];
+            return Math.max(0, objetivo.pos - _tramo.along);
+        }
+        function navOcultarBanner() { const b = document.getElementById("nav-maniobra"); if (b) b.classList.remove("visible", "recalc"); }
+        function navMostrarBanner(recalculando) {
+            const b = document.getElementById("nav-maniobra"); if (!b) return;
+            if (!navModoActivo || ROL_ACTUAL !== "repartidor") { navOcultarBanner(); return; }
+            if (recalculando) {
+                b.classList.add("visible", "recalc");
+                document.getElementById("nm-dist").textContent = "Recalculando ruta…";
+                document.getElementById("nm-instr").textContent = ""; document.getElementById("nm-calle").textContent = "";
+                document.getElementById("nm-icono").innerHTML = '<svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-3-6.2M20 4v5h-5"/></svg>';
+                return;
+            }
+            if (!_tramo || !_tramo.pasos.length) { navOcultarBanner(); return; }
+            const p = _tramo.pasos[Math.min(_tramo.paso + 1, _tramo.pasos.length - 1)];
+            b.classList.add("visible"); b.classList.remove("recalc");
+            document.getElementById("nm-dist").textContent = navFormatoDist(navDistManiobra());
+            document.getElementById("nm-instr").textContent = navTextoPaso(p);
+            document.getElementById("nm-calle").textContent = p.tipo === "arrive" ? ((obtenerProximoClientePendiente() || {}).nombre || "") : (p.calle ? "hacia " + p.calle : "");
+            const ic = document.getElementById("nm-icono"), svg = navIconoPaso(p);
+            if (ic.dataset.k !== svg) { ic.innerHTML = svg; ic.dataset.k = svg; }
+        }
+        function navLimpiarTramo() {
+            map.off("zoomend moveend", navDibujarFlechas);
+            if (_tramo && _tramo.grupo) { try { map.removeLayer(_tramo.grupo); } catch (e) {} }
+            _tramo = null;
+            lineasRutasCapas.forEach(l => { if (l.redibujarFlechas) l.redibujarFlechas(); });
+        }
+        function navLimpiarTodo() { navLimpiarTramo(); navOcultarBanner(); navSalirRotacion(); }
+
+        function navDibujarFlechas() {
+            if (!_tramo) return;
+            const fl = _tramo.flechas; fl.clearLayers();
+            const z = map.getZoom(), vista = map.getPixelBounds().pad(0.2);
+            const pts = _tramo.rest.map(c => map.project(L.latLng(c[1], c[0]), z));
+            const ESPACIO = 46; let acum = ESPACIO;
+            for (let i = 1; i < pts.length; i++) {
+                const a = pts[i - 1], b = pts[i], dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy);
+                if (len < 0.5) continue;
+                const ux = dx / len, uy = dy / len; let pos = acum;
+                while (pos <= len) {
+                    const x = a.x + ux * pos, y = a.y + uy * pos;
+                    if (vista.contains(L.point(x, y))) {
+                        const ang = Math.round(Math.atan2(ux, -uy) * 180 / Math.PI);
+                        const svg = '<svg width="18" height="18" viewBox="0 0 24 24" style="transform:rotate(' + ang + 'deg);display:block;overflow:visible"><path d="M5 16 L12 7 L19 16" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+                        fl.addLayer(L.marker(map.unproject(L.point(x, y), z), { icon: L.divIcon({ className: "flecha-ruta", html: svg, iconSize: [18, 18], iconAnchor: [9, 9] }), interactive: false, keyboard: false, zIndexOffset: -400 }));
+                    }
+                    pos += ESPACIO;
+                }
+                acum = pos - len;
+            }
+        }
+        function navConstruirTramo(r0, clienteId) {
+            navLimpiarTramo();
+            const coords = (r0.geometry && r0.geometry.coordinates) || [];
+            if (coords.length < 2) return;
+            const cum = [0];
+            for (let i = 1; i < coords.length; i++) cum.push(cum[i - 1] + navMetrosEntre(coords[i - 1], coords[i]));
+            const pasos = []; let desde = 0;
+            ((r0.legs && r0.legs[0] && r0.legs[0].steps) || []).forEach(st => {
+                const m = st.maneuver || {}; let mejor = desde, md = Infinity;
+                if (m.location) for (let i = desde; i < coords.length; i++) { const d = navMetrosEntre(coords[i], m.location); if (d < md) { md = d; mejor = i; } }
+                desde = mejor;
+                pasos.push({ tipo: m.type, mod: m.modifier, exit: m.exit, calle: st.name || "", pos: cum[mejor] });
+            });
+            if (pasos.length) pasos[pasos.length - 1].pos = cum[cum.length - 1];
+            const ll = coords.map(c => [c[1], c[0]]);
+            const casing = L.polyline(ll, { color: "#ffffff", weight: 11, opacity: 0.95, lineCap: "round", lineJoin: "round", interactive: false });
+            const linea = L.polyline(ll, { color: "#1f6feb", weight: 7, opacity: 1, lineCap: "round", lineJoin: "round", interactive: false });
+            const flechas = L.layerGroup();
+            const grupo = L.featureGroup([casing, linea, flechas]).addTo(map);
+            _tramo = { clienteId, coords, cum, idx: 0, along: 0, pasos, paso: 0, rest: coords.slice(), casing, linea, flechas, grupo, fuera: 0 };
+            map.off("zoomend moveend", navDibujarFlechas); map.on("zoomend moveend", navDibujarFlechas);
+            lineasRutasCapas.forEach(l => { if (l.redibujarFlechas) l.redibujarFlechas(); });
+            navDibujarFlechas();
+        }
+        function navSolicitarTramo(lat, lng, cliente) {
+            const ahora = Date.now();
+            if (_tramoSolicitando || ahora - _tramoUltimoPedido < 8000) return;
+            _tramoSolicitando = true; _tramoUltimoPedido = ahora;
+            fetch("https://router.project-osrm.org/route/v1/driving/" + lng + "," + lat + ";" + cliente.lng + "," + cliente.lat + "?overview=full&geometries=geojson&steps=true")
+                .then(r => r.json())
+                .then(res => {
+                    _tramoSolicitando = false;
+                    if (!navModoActivo || ROL_ACTUAL !== "repartidor" || !res.routes || !res.routes[0]) return;
+                    const prox = obtenerProximoClientePendiente();
+                    if (!prox || prox.id !== cliente.id) return; // cambió el destino mientras llegaba la respuesta
+                    navConstruirTramo(res.routes[0], cliente.id);
+                    if (marcadorMiGpsActual) { const p = marcadorMiGpsActual.getLatLng(); navProcesarPosicion(p.lat, p.lng); }
+                })
+                .catch(() => { _tramoSolicitando = false; });
+        }
+        function navProyectar(lat, lng) {
+            const t = _tramo, n = t.coords.length;
+            const kx = 111320 * Math.cos(lat * Math.PI / 180), ky = 110540;
+            let best = null; const fin = Math.min(n - 2, t.idx + 120);
+            for (let i = t.idx; i <= fin; i++) {
+                const a = t.coords[i], b = t.coords[i + 1];
+                const ax = (a[0] - lng) * kx, ay = (a[1] - lat) * ky, bx = (b[0] - lng) * kx, by = (b[1] - lat) * ky;
+                const dx = bx - ax, dy = by - ay, l2 = dx * dx + dy * dy;
+                const u = l2 ? Math.max(0, Math.min(1, -(ax * dx + ay * dy) / l2)) : 0;
+                const d = Math.hypot(ax + u * dx, ay + u * dy);
+                if (!best || d < best.d) best = { d, i, u, lng: a[0] + u * (b[0] - a[0]), lat: a[1] + u * (b[1] - a[1]), seg: Math.sqrt(l2) };
+            }
+            return best;
+        }
+        function navProcesarPosicion(lat, lng) {
+            if (!navModoActivo || ROL_ACTUAL !== "repartidor") return;
+            const cli = obtenerProximoClientePendiente();
+            if (!cli || cli.lat === null || cli.lng === null || cli.lat === undefined) { if (_tramo) navLimpiarTramo(); navOcultarBanner(); return; }
+            if (!_tramo || _tramo.clienteId !== cli.id) {
+                if (_tramo) { navLimpiarTramo(); navOcultarBanner(); }
+                navSolicitarTramo(lat, lng, cli); return;
+            }
+            const pr = navProyectar(lat, lng);
+            if (!pr || pr.d > 60) { // fuera de la ruta
+                _tramo.fuera++;
+                navMostrarBanner(true);
+                if (_tramo.fuera >= 2 || (pr && pr.d > 150)) navSolicitarTramo(lat, lng, cli);
+                return;
+            }
+            _tramo.fuera = 0; _tramo.idx = pr.i;
+            _tramo.along = _tramo.cum[pr.i] + pr.u * pr.seg;
+            _tramo.rest = [[pr.lng, pr.lat]].concat(_tramo.coords.slice(pr.i + 1));
+            const ll = _tramo.rest.map(c => [c[1], c[0]]);
+            _tramo.casing.setLatLngs(ll); _tramo.linea.setLatLngs(ll);
+            while (_tramo.paso < _tramo.pasos.length - 2 && _tramo.along >= _tramo.pasos[_tramo.paso + 1].pos - 12) _tramo.paso++;
+            navMostrarBanner(false);
+            navDibujarFlechas();
+        }
+        // Fase 2: zoom automático por cercanía a la maniobra (acerca de inmediato, aleja con calma)
+        function navZoomObjetivo(zoomCli) {
+            if (!navModoActivo || !_tramo) return zoomCli;
+            const d = navDistManiobra(); if (d === null) return zoomCli;
+            const zm = d < 120 ? 19 : d < 350 ? 18 : d < 1000 ? 17 : 16;
+            const obj = Math.max(zoomCli, zm), act = Math.round(map.getZoom()), ahora = Date.now();
+            if (obj === act) return act;
+            if (obj > act) { _navZoomUltimoCambio = ahora; return obj; }
+            if (ahora - _navZoomUltimoCambio > 5000) { _navZoomUltimoCambio = ahora; return obj; }
+            return act;
+        }
+        function crearIconoNavegacion(rel) {
+            const html = '<div class="nav-veh"><div class="halo"></div><svg width="44" height="44" viewBox="0 0 40 40" style="transform:rotate(' + Math.round(rel || 0) + 'deg)"><path d="M20 5 L31 33 L20 26 L9 33 Z" fill="#1f6feb" stroke="#fff" stroke-width="3" stroke-linejoin="round"/></svg></div>';
+            return L.divIcon({ className: "svg-icon-marcador", html, iconSize: [44, 44], iconAnchor: [22, 22] });
+        }
+        function navActualizarBotonModo() {
+            const b = document.getElementById("btn-nav-modo"); if (b) b.classList.toggle("activo", navModoActivo);
+        }
+        function navToggleModo() {
+            navModoActivo = !navModoActivo;
+            try { localStorage.setItem("tenate_nav", navModoActivo ? "1" : "0"); } catch (e) {}
+            navActualizarBotonModo();
+            if (!navModoActivo) {
+                navLimpiarTodo();
+                if (marcadorMiGpsActual) marcadorMiGpsActual.setIcon(crearIconoRepartidorEnVivo(ultimoRumboConocido));
+            } else {
+                seguimientoCamaraActivo = true; marcarBotonCentrarComoPausado(false);
+                if (marcadorMiGpsActual) { const ll = marcadorMiGpsActual.getLatLng(); seguirCamaraConGPS(ll.lat, ll.lng); }
+            }
+        }
+        setTimeout(navActualizarBotonModo, 0);
 
         function marcarBotonCentrarComoPausado(pausado) {
             const btn = document.getElementById("btn-centrar-circular");
