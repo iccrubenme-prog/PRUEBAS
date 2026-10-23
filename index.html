@@ -1438,7 +1438,7 @@
                 const tieneClientesVisibles = listaRuta.some(p =>
                     p.id !== 0 &&
                     (clientesSeleccionadosFiltro.length === 0 || clientesSeleccionadosFiltro.includes(p.id.toString())) &&
-                    (diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado)
+                    clienteEnDiaActivo(p)
                 );
                 if (!tieneClientesVisibles) continue;
 
@@ -1591,7 +1591,7 @@
                             notas: item.notas || "",
                             rutaAsignadaBase: item.ruta || "",
                             quien: item.quien || "",
-                            dia: item.dia || "",
+                            dia: (item.dia === undefined || item.dia === null) ? "" : String(item.dia).trim(),
                             pedido: item.pedido || "",
                             cte: (item.cte !== undefined && item.cte !== null && item.cte.toString().trim() !== "") ? parseInt(item.cte) : null
                         });
@@ -1739,7 +1739,7 @@
                 // DESPUÉS del de otro día, dejando el nombre equivocado si el orden era
                 // al revés (ej. admin viendo Domingo B pero mostrando el nombre de
                 // Domingo A porque ese cliente estaba primero en la hoja).
-                if (diaActivoFiltrado === "todos" || c.dia === diaActivoFiltrado) {
+                if (clienteEnDiaActivo(c)) {
                     nombresPorRuta[idx] = c.quien.trim();
                 }
             });
@@ -1762,7 +1762,7 @@
             selectFiltro.innerHTML = '<option value="todas">🌍 Ver Todas las Rutas (Administrador)</option>';
             for (let r = 0; r < cantRutas; r++) {
                 const tieneClientes = rutasEstructuradas[r].some(p =>
-                    p.id !== 0 && (diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado)
+                    p.id !== 0 && clienteEnDiaActivo(p)
                 );
                 if (!tieneClientes) continue;
                 const etiqueta = nombresPorRuta[r] ? `Ruta ${nombresPorRuta[r]}` : `Ruta ${r + 1}`;
@@ -1782,6 +1782,7 @@
                 diasUnicos.forEach(d => {
                     selectDiaGate.innerHTML += `<option value="${d}"${d === diaActualGate ? " selected" : ""}>${d}</option>`;
                 });
+                if (clientes.some(c => !c.dia || String(c.dia).trim() === "")) selectDiaGate.innerHTML += `<option value="sindia"${diaActualGate === "sindia" ? " selected" : ""}>❔ Sin día</option>`;
                 // Poblar rutas según el día seleccionado en el gate
                 actualizarRutasPorDiaGate(diaActualGate);
             }
@@ -1800,7 +1801,7 @@
             // Construir mapa de nombres por ruta filtrado por el día seleccionado
             const nombresPorRutaDia = {};
             clientes.forEach(c => {
-                if (!c.rutaAsignadaBase || !c.dia || c.dia !== dia) return;
+                if (!c.rutaAsignadaBase || (dia === "sindia" ? String(c.dia || "").trim() !== "" : c.dia !== dia)) return;
                 const match = c.rutaAsignadaBase.match(/\d+/);
                 if (!match) return;
                 const idx = parseInt(match[0]) - 1;
@@ -1831,15 +1832,25 @@
             diasUnicos.forEach(d => {
                 select.innerHTML += `<option value="${d}">${d}</option>`;
             });
+            const haySinDia = clientes.some(c => !c.dia || String(c.dia).trim() === "");
+            if (haySinDia) select.innerHTML += '<option value="sindia">❔ Sin día</option>';
             // Restaurar el último filtro de día guardado para este usuario, si sigue disponible
             const diaGuardado = localStorage.getItem("tenate_filtro_dia");
-            if (diaGuardado && (diaGuardado === "todos" || diasUnicos.includes(diaGuardado))) {
+            if (diaGuardado && (diaGuardado === "todos" || diasUnicos.includes(diaGuardado) || (diaGuardado === "sindia" && haySinDia))) {
                 diaActivoFiltrado = diaGuardado;
                 select.value = diaGuardado;
             }
         }
 
         let diaActivoFiltrado = localStorage.getItem("tenate_filtro_dia") || "todos";
+        // Filtro de día: "todos", "sindia" (clientes sin día asignado) o el nombre exacto del día
+        function clienteEnDiaActivo(c) {
+            if (diaActivoFiltrado === "todos") return true;
+            const d = (c.dia === undefined || c.dia === null) ? "" : String(c.dia).trim();
+            if (diaActivoFiltrado === "sindia") return d === "";
+            return d === diaActivoFiltrado;
+        }
+        function etiquetaDiaActivo() { return diaActivoFiltrado === "sindia" ? "Sin día" : diaActivoFiltrado; }
 
         // Reconstruye rutasEstructuradas desde clientes[] filtrando por el día activo.
         // Se usa tanto en la carga inicial como cada vez que cambia el filtro de día,
@@ -1853,7 +1864,7 @@
             rutasEstructuradas.forEach(ruta => ruta.forEach(p => { if (p.id !== 0) idsEnRutas.add(p.id); }));
             return clientes.filter(c =>
                 !idsEnRutas.has(c.id) &&
-                (diaActivoFiltrado === "todos" || c.dia === diaActivoFiltrado || !c.dia || c.dia.toString().trim() === "") &&
+                clienteEnDiaActivo(c) &&
                 (clientesSeleccionadosFiltro.length === 0 || clientesSeleccionadosFiltro.includes(c.id.toString()))
             );
         }
@@ -1865,7 +1876,7 @@
                 rutasOptimizadasActivas = true;
                 let maxRutaNum = 1;
                 clientes.forEach(c => {
-                    if (diaActivoFiltrado !== "todos" && c.dia !== diaActivoFiltrado) return;
+                    if (!clienteEnDiaActivo(c)) return;
                     let match = c.rutaAsignadaBase.match(/ruta\s*(\d+)/i);
                     if (match) { let n = parseInt(match[1]); if (n > maxRutaNum) maxRutaNum = n; }
                 });
@@ -1876,7 +1887,7 @@
                     // Solo incluir clientes del día activo: el nombre de ruta ("Ruta 1", "Ruta 2"...)
                     // se reutiliza entre días distintos, así que sin este filtro se mezclan
                     // clientes de días diferentes en la misma ruta, rompiendo la secuencia de #Cte.
-                    if (diaActivoFiltrado !== "todos" && c.dia !== diaActivoFiltrado) return;
+                    if (!clienteEnDiaActivo(c)) return;
                     let match = c.rutaAsignadaBase.match(/ruta\s*(\d+)/i);
                     if (match) {
                         let idx = parseInt(match[1]) - 1;
@@ -2170,7 +2181,7 @@
                 let clientesFiltradosEnRuta = listaRuta.filter(p =>
                     p.id !== 0 &&
                     (clientesSeleccionadosFiltro.length === 0 || clientesSeleccionadosFiltro.includes(p.id.toString())) &&
-                    (diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado)
+                    clienteEnDiaActivo(p)
                 );
                 let totalClientesRuta = clientesFiltradosEnRuta.length;
 
@@ -2220,7 +2231,7 @@
 
                     }
 
-                    if (diaActivoFiltrado !== "todos" && punto.dia !== diaActivoFiltrado) return;
+                    if (!clienteEnDiaActivo(punto)) return;
 
 
 
@@ -2719,7 +2730,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                     p.id === 0 || (
                         p.lat !== null && p.lng !== null && !p.entregado &&
                         (clientesSeleccionadosFiltro.length === 0 || clientesSeleccionadosFiltro.includes(p.id.toString())) &&
-                        (diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado)
+                        clienteEnDiaActivo(p)
                     )
                 );
 
@@ -2728,7 +2739,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                 const puntosParaLlegadas = listaRuta.filter(p =>
                     p.id === 0 || (
                         p.lat !== null && p.lng !== null && !p.entregado &&
-                        (diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado)
+                        clienteEnDiaActivo(p)
                     )
                 );
 
@@ -2822,7 +2833,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                             let clientesFiltradosEnRuta = listaRuta.filter(p =>
                                 p.id !== 0 &&
                                 (clientesSeleccionadosFiltro.length === 0 || clientesSeleccionadosFiltro.includes(p.id.toString())) &&
-                                (diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado)
+                                clienteEnDiaActivo(p)
                             );
                             let totalClientesRuta = clientesFiltradosEnRuta.length;
                             let totalCobroRuta = clientesFiltradosEnRuta.reduce((sum, p) => sum + (parseFloat(p.monto) || 0), 0);
@@ -2861,7 +2872,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                     p.id === 0 || (
                         p.lat !== null && p.lng !== null && !p.entregado &&
                         (clientesSeleccionadosFiltro.length === 0 || clientesSeleccionadosFiltro.includes(p.id.toString())) &&
-                        (diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado)
+                        clienteEnDiaActivo(p)
                     )
                 );
                 if (puntosValidos.length < 2) return;
@@ -2912,7 +2923,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                     let clientesFiltradosEnRuta = listaRuta.filter(p =>
                         p.id !== 0 &&
                         (clientesSeleccionadosFiltro.length === 0 || clientesSeleccionadosFiltro.includes(p.id.toString())) &&
-                        (diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado)
+                        clienteEnDiaActivo(p)
                     );
                     let totalClientesRuta = clientesFiltradosEnRuta.length;
                     let totalCobroRuta = clientesFiltradosEnRuta.reduce((sum, p) => sum + (parseFloat(p.monto) || 0), 0);
@@ -2967,7 +2978,10 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             }).catch(() => {});
         }
 
-        function reoptimizarYRecalcularDesdeGPS(latVivo, lngVivo) {
+        // reordenar=false: NO toca el orden ni el #Cte (se respeta el que armó el administrador); solo envía
+        // la ubicación al admin y recalcula las horas de llegada desde el GPS. reordenar=true: solo cuando
+        // el repartidor pulsa "Reoptimizar mi ruta".
+        function reoptimizarYRecalcularDesdeGPS(latVivo, lngVivo, reordenar = true) {
             if (ROL_ACTUAL !== "repartidor") return false;
             const idxRuta = parseInt(rutaActivaFiltrada);
             if (isNaN(idxRuta) || !rutasEstructuradas[idxRuta]) return false;
@@ -2975,8 +2989,8 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             let gpsRepartidor = { id: 0, nombre: "Mi GPS Actual", lat: latVivo, lng: lngVivo };
             ultimaPosicionGPSVivo = { lat: latVivo, lng: lngVivo, idxRuta: idxRuta };
 
-            if (marcadorMiGpsActual) map.removeLayer(marcadorMiGpsActual);
-            marcadorMiGpsActual = L.marker([latVivo, lngVivo], { icon: crearIconoRepartidorEnVivo() }).addTo(map);
+            if (marcadorMiGpsActual) marcadorMiGpsActual.setLatLng([latVivo, lngVivo]);
+            else marcadorMiGpsActual = L.marker([latVivo, lngVivo], { icon: navModoActivo ? crearIconoNavegacion(0) : crearIconoRepartidorEnVivo() }).addTo(map);
 
             // La ubicación para el admin se manda SIEMPRE que tengamos GPS, sin importar
             // si hay pendientes que reordenar — antes estaba después del "return false"
@@ -2986,7 +3000,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
 
             // Solo reoptimizamos los clientes del día activo (si hay filtro de día).
             // Los clientes de otros días en la misma ruta NO se tocan ni renumeran.
-            const enDiaActivo = p => diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado;
+            const enDiaActivo = p => clienteEnDiaActivo(p);
 
             let pendientes = rutasEstructuradas[idxRuta].filter(p =>
                 p.id !== 0 && p.lat !== null && p.lng !== null && !p.entregado && enDiaActivo(p)
@@ -2999,6 +3013,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
 
             if (pendientes.length === 0) return false;
 
+            if (reordenar) {
             // Se optimiza partiendo desde el GPS actual del repartidor
             let subRutaReoptimizada = optimizarOrdenInternoVecino(pendientes, gpsRepartidor);
 
@@ -3029,6 +3044,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             }).catch(() => {});
 
             refrescarMapaYListasVisuales();
+            }
 
             // Se dibuja la línea de la ruta y se calculan las horas de llegada en la
             // MISMA petición a OSRM, partiendo de tu GPS actual (no del depósito) —
@@ -3039,7 +3055,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                 ...rutasEstructuradas[idxRuta].filter(p =>
                     p.id === 0 || (
                         p.lat !== null && p.lng !== null && !p.entregado &&
-                        (diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado)
+                        clienteEnDiaActivo(p)
                     )
                 ).slice(1) // se quita el depósito inicial del arreglo original, ya que ahora el punto de partida es el GPS
             ];
@@ -3193,7 +3209,9 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
 
             ultimaPosicionRecalculada = { lat, lng };
             ultimoRecalculoAutoTimestamp = ahora;
-            reoptimizarYRecalcularDesdeGPS(lat, lng);
+            // Sin reordenar: el orden del administrador se respeta toda la jornada; esto solo
+            // actualiza la ubicación que ve el admin y las horas de llegada.
+            reoptimizarYRecalcularDesdeGPS(lat, lng, false);
         }
 
         // ── Cámara del mapa tipo Google Maps para el repartidor ───────────────────
@@ -3281,7 +3299,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
 
             const pendientes = rutasEstructuradas[idxRuta].filter(p =>
                 p.id !== 0 && p.lat !== null && p.lng !== null && !p.entregado &&
-                (diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado)
+                clienteEnDiaActivo(p)
             );
 
             let distanciaMasCercana = 2000; // valor por defecto si no hay pendientes cerca
@@ -3653,7 +3671,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                 sel.value = diaActivoFiltrado;
                 const sub = document.getElementById("drw-sub-dia");
                 const op = [...o.options].find(x => x.value === diaActivoFiltrado);
-                if (sub) sub.textContent = diaActivoFiltrado === "todos" ? "Todos los días" : (op ? op.text.replace(/^[^\wÁ-ú]+/u, "").trim() : diaActivoFiltrado);
+                if (sub) sub.textContent = diaActivoFiltrado === "todos" ? "Todos los días" : (diaActivoFiltrado === "sindia" ? "Sin día" : (op ? op.text.replace(/^[^\wÁ-ú]+/u, "").trim() : diaActivoFiltrado));
             }
             const h = document.getElementById("hora-salida-ruta"), inp = document.getElementById("drw-inp-hora");
             if (h && inp) { if (horaSalidaEditadaManualmente) h.value = horaSalidaRuta; inp.value = h.value; const sh = document.getElementById("drw-sub-hora"); if (sh) sh.textContent = horaSalidaEditadaManualmente ? horaSalidaRuta + " · fija" : "Automática (" + (h.value || "ahora") + ")"; }
@@ -3926,7 +3944,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             const mEl = document.getElementById("adm-cal-mes"), dEl = document.getElementById("adm-cal-dia");
             if (mEl) mEl.textContent = meses[f.getMonth()];
             if (dEl) dEl.textContent = f.getDate();
-            txt.textContent = diaActivoFiltrado === "todos" ? "Todos los días" : (op ? limpio(op.text) : diaActivoFiltrado);
+            txt.textContent = diaActivoFiltrado === "todos" ? "Todos los días" : (diaActivoFiltrado === "sindia" ? "Sin día" : (op ? limpio(op.text) : diaActivoFiltrado));
         }
 
 
@@ -3995,7 +4013,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
         function admReoptimizarConAnclas(idxRuta) {
             const ruta = rutasEstructuradas[idxRuta];
             if (!ruta) return;
-            const visible = p => p.id !== 0 && !p.entregado && p.lat !== null && p.lng !== null && (diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado);
+            const visible = p => p.id !== 0 && !p.entregado && p.lat !== null && p.lng !== null && clienteEnDiaActivo(p);
             const pend = ruta.filter(visible);
             const n = pend.length;
             if (n === 0) return;
@@ -4071,7 +4089,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             if (ROL_ACTUAL !== "admin") return;
             const ruta = rutasEstructuradas[idxRuta];
             if (!ruta) return;
-            const visible = p => p.id !== 0 && !p.entregado && p.lat !== null && p.lng !== null && (diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado);
+            const visible = p => p.id !== 0 && !p.entregado && p.lat !== null && p.lng !== null && clienteEnDiaActivo(p);
             const pend = ruta.filter(visible);
             const i = pend.findIndex(p => String(p.id) === String(id));
             const j = i + dir;
@@ -4121,7 +4139,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             } else if (admDetalle.tipo === "ruta") {
                 const idx = admDetalle.idx;
                 const color = obtenerColorRuta(idx);
-                const cli = (rutasEstructuradas[idx] || []).filter(p => p.id !== 0 && (diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado))
+                const cli = (rutasEstructuradas[idx] || []).filter(p => p.id !== 0 && clienteEnDiaActivo(p))
                     .sort((a, b) => (a.cte ?? 999) - (b.cte ?? 999));
                 const ent = cli.filter(p => p.entregado).length;
                 const cobro = cli.reduce((a, p) => a + (parseFloat(p.monto) || 0), 0);
@@ -4180,7 +4198,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                     const seg = Math.max(0, Math.round((Date.now() - (r.ts || 0)) / 1000));
                     const hace = seg < 60 ? `hace ${seg} s` : `hace ${Math.round(seg / 60)} min`;
                     const viejo = seg > 120;
-                    const cli = (rutasEstructuradas[r.idx] || []).filter(p => p.id !== 0 && (diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado));
+                    const cli = (rutasEstructuradas[r.idx] || []).filter(p => p.id !== 0 && clienteEnDiaActivo(p));
                     const ent = cli.filter(p => p.entregado).length;
                     const pct = cli.length ? Math.round(ent * 100 / cli.length) : 0;
                     return `<div class="cli" role="button" tabindex="0" onclick="enfocarEnMapaAdmin(${r.lat}, ${r.lng})">
@@ -4207,7 +4225,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             rutasEstructuradas.forEach((lista, idx) => {
                 if (rutaActivaFiltrada !== "todas" && parseInt(rutaActivaFiltrada) !== idx) return;
                 (lista || []).forEach(p => {
-                    if (p.id !== 0 && p.lat !== null && p.lng !== null && (diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado)) pts.push([p.lat, p.lng]);
+                    if (p.id !== 0 && p.lat !== null && p.lng !== null && clienteEnDiaActivo(p)) pts.push([p.lat, p.lng]);
                 });
             });
             if (rutaActivaFiltrada === "todas" || rutaActivaFiltrada === "sinruta") clientesSinRutaFiltrados().forEach(c => { if (c.lat !== null && c.lng !== null) pts.push([c.lat, c.lng]); });
@@ -4225,7 +4243,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             sincronizarChipDiaAdmin();
             actualizarPillFiltroAdmin();
             actualizarMenuMasAdmin();
-            const delDia = c => diaActivoFiltrado === "todos" || c.dia === diaActivoFiltrado;
+            const delDia = c => clienteEnDiaActivo(c);
             const nombres = construirMapaNombresPorRuta();
             let totalCli = 0, totalEnt = 0, totalCobro = 0, filas = "", rutasConClientes = 0;
             rutasEstructuradas.forEach((lista, idx) => {
@@ -4296,7 +4314,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             if (!isNaN(idxRuta) && rutasEstructuradas[idxRuta]) {
                 rutasEstructuradas[idxRuta].forEach(p => {
                     if (p.id !== 0 && p.lat !== null && p.lng !== null &&
-                        (diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado)) {
+                        clienteEnDiaActivo(p)) {
                         coords.push([p.lat, p.lng]);
                     }
                 });
@@ -4329,7 +4347,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             if (isNaN(idxRuta) || !rutasEstructuradas[idxRuta]) { contenedor.style.display = 'none'; return; }
 
             const clientesRuta = rutasEstructuradas[idxRuta].filter(p =>
-                p.id !== 0 && (diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado)
+                p.id !== 0 && clienteEnDiaActivo(p)
             );
             const total = clientesRuta.length;
             if (total === 0) { contenedor.style.display = 'none'; return; }
@@ -4354,7 +4372,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             if (subApp) {
                 const pend = total - entregados;
                 const partes = [];
-                if (diaActivoFiltrado !== "todos") partes.push(diaActivoFiltrado);
+                if (diaActivoFiltrado !== "todos") partes.push(etiquetaDiaActivo());
                 partes.push(pend === 0 ? "Ruta completada 🎉" : `${pend} pendiente${pend === 1 ? '' : 's'}`);
                 subApp.textContent = partes.join(" · ");
             }
@@ -4412,7 +4430,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             const idxRuta = parseInt(rutaActivaFiltrada);
             if (isNaN(idxRuta) || !rutasEstructuradas[idxRuta]) return null;
             const pendientes = rutasEstructuradas[idxRuta].filter(p =>
-                p.id !== 0 && !p.entregado && (diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado)
+                p.id !== 0 && !p.entregado && clienteEnDiaActivo(p)
             );
             if (pendientes.length === 0) return null;
             pendientes.sort((a, b) => (a.cte ?? 999) - (b.cte ?? 999));
@@ -4515,7 +4533,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                 return;
             }
 
-            const clientesDelDia = diaActivoFiltrado === "todos" ? clientes : clientes.filter(c => c.dia === diaActivoFiltrado);
+            const clientesDelDia = clientes.filter(c => clienteEnDiaActivo(c));
             const validos = clientesDelDia.filter(c => c.lat !== null && c.lng !== null && !c.entregado);
             const sinUbicacion = clientesDelDia.filter(c => c.lat === null || c.lng === null);
 
@@ -5068,7 +5086,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                                 let textoProgreso = "";
                                 if (rutasEstructuradas[idx]) {
                                     const clientesRuta = rutasEstructuradas[idx].filter(p =>
-                                        p.id !== 0 && (diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado)
+                                        p.id !== 0 && clienteEnDiaActivo(p)
                                     );
                                     if (clientesRuta.length > 0) {
                                         const entregados = clientesRuta.filter(p => p.entregado).length;
@@ -5261,7 +5279,7 @@ return texto.replace(/^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\s]+/u, "").trim();
             const filas = rutasEstructuradas.map((listaRuta, indice) => {
                 const clientes = listaRuta.filter(p =>
                     p.id !== 0 &&
-                    (diaActivoFiltrado === "todos" || p.dia === diaActivoFiltrado)
+                    clienteEnDiaActivo(p)
                 );
                 const totalClientes = clientes.length;
                 const totalMonto = clientes.reduce((s, p) => s + (parseFloat(p.monto) || 0), 0);
@@ -5282,7 +5300,7 @@ return texto.replace(/^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\s]+/u, "").trim();
 
             // Título con total de clientes
             const totalClientesGlobal = filas.reduce((s, f) => s + f.totalClientes, 0);
-            const sufijoDia = diaActivoFiltrado !== "todos" ? ` — ${diaActivoFiltrado}` : "";
+            const sufijoDia = diaActivoFiltrado !== "todos" ? ` — ${etiquetaDiaActivo()}` : "";
             tituloModal.textContent = `📊 Resumen de Rutas${sufijoDia} — ${totalClientesGlobal} clientes`;
 
             const tbody = document.getElementById("resumen-tabla-body");
@@ -5318,7 +5336,7 @@ return texto.replace(/^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\s]+/u, "").trim();
             // Determinar subconjunto de clientes según filtros activos
             let clientesFiltrados = clientes.filter(c => c.entregado); // solo entregados
             if (diaActivoFiltrado !== "todos") {
-                clientesFiltrados = clientesFiltrados.filter(c => c.dia === diaActivoFiltrado);
+                clientesFiltrados = clientesFiltrados.filter(c => clienteEnDiaActivo(c));
             }
             if (rutaActivaFiltrada !== "todas") {
                 const idxRuta = parseInt(rutaActivaFiltrada);
@@ -5329,10 +5347,10 @@ return texto.replace(/^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\s]+/u, "").trim();
             }
 
             // Título y meta
-            const tituloSufijo = diaActivoFiltrado !== "todos" ? ` — ${diaActivoFiltrado}` : "";
+            const tituloSufijo = diaActivoFiltrado !== "todos" ? ` — ${etiquetaDiaActivo()}` : "";
             document.getElementById("cierre-titulo").textContent = `📋 Cierre de Día${tituloSufijo}`;
             const total = clientesFiltrados.length;
-            const pendientes = clientes.filter(c => !c.entregado && (diaActivoFiltrado === "todos" || c.dia === diaActivoFiltrado)).length;
+            const pendientes = clientes.filter(c => !c.entregado && clienteEnDiaActivo(c)).length;
             document.getElementById("cierre-meta").textContent =
                 `Entregados: ${total}  |  Pendientes: ${pendientes}  |  Generado: ${new Date().toLocaleString('es-MX')}`;
 
@@ -5356,7 +5374,7 @@ return texto.replace(/^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\s]+/u, "").trim();
             // y pendientes), no solo los ya entregados — así el admin ve el total real desde
             // temprano, sin esperar a que se vayan entregando. Se aplican los mismos filtros
             // de día/ruta que clientesFiltrados, pero sin exigir que ya estén entregados.
-            let clientesTodosDelDia = clientes.filter(c => diaActivoFiltrado === "todos" || c.dia === diaActivoFiltrado);
+            let clientesTodosDelDia = clientes.filter(c => clienteEnDiaActivo(c));
             if (rutaActivaFiltrada !== "todas") {
                 const idxRuta = parseInt(rutaActivaFiltrada);
                 if (!isNaN(idxRuta) && rutasEstructuradas[idxRuta]) {
@@ -5439,7 +5457,7 @@ return texto.replace(/^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\s]+/u, "").trim();
             const d = window._cierreDatos;
             if (!d) return;
             const { tiposPedido, metodos, diasUnicos, matrizMetodo, matrizDia, diaActivoFiltrado } = d;
-            const sufijo = diaActivoFiltrado !== "todos" ? ` - ${diaActivoFiltrado}` : "";
+            const sufijo = diaActivoFiltrado !== "todos" ? ` - ${diaActivoFiltrado === "sindia" ? "Sin día" : diaActivoFiltrado}` : "";
 
             const azul   = "#1A3C5E";
             const azulCl = "#EAF1F8";
