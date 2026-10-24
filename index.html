@@ -955,6 +955,14 @@
             body.vista-repartidor #btn-reopt-circular { display: none !important; }
             #nav-maniobra { right: 54px; }
         }
+
+        #adm-sim-chip { display: none; position: absolute; top: 74px; left: 10px; right: 10px; z-index: 1000; background: #4a3220; color: #fff8ee; border-radius: 14px; padding: 7px 8px 7px 12px; font-size: 13px; font-weight: 700; align-items: center; gap: 8px; box-shadow: 0 3px 10px rgba(0,0,0,.3); }
+        #adm-sim-chip.visible { display: none; }
+        body.vista-admin #adm-sim-chip.visible { display: flex; }
+        #adm-sim-chip #adm-sim-chip-txt { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #adm-sim-chip button { background: #f1e4d0; color: #4a3220; border: none; border-radius: 10px; padding: 6px 10px; font-weight: 800; font-size: 12px; cursor: pointer; flex-shrink: 0; }
+        .sim-aplic { margin: 10px 0; background: #f1e4d0; border: 1px solid #d9c3a0; border-radius: 12px; padding: 10px 12px; font-size: 13px; color: #4a3220; line-height: 1.5; }
+        .sim-aplic button { display: block; margin-top: 8px; width: 100%; background: #4a3220; color: #fff; border: none; border-radius: 10px; padding: 10px; font-weight: 800; font-size: 14px; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -1137,6 +1145,7 @@
         </div>
 
         <script>document.querySelectorAll(".header-logo").forEach(function(i){var g=document.querySelector(".gate-logo"); if(g) i.src=g.src;});</script>
+        <div id="adm-sim-chip"><span>🔮</span><span id="adm-sim-chip-txt"></span><button onclick="simVolverAutomatico()">↺ Automático</button></div>
         <div id="nav-maniobra" aria-live="polite"><div class="nm-ic" id="nm-icono"></div><div class="nm-tx"><span id="nm-dist">—</span><span id="nm-instr"></span><span id="nm-calle"></span></div></div>
         <div id="nav-attrib">© OpenStreetMap</div>
                 <!-- Botones circulares flotantes -->
@@ -1213,7 +1222,7 @@
         function obtenerFactorTrafico(horaSim, diaSim) {
             const ahora = new Date();
             const hora  = (horaSim !== undefined) ? horaSim : (typeof minutosSalidaBase === "function" ? minutosSalidaBase() / 60 : ahora.getHours() + ahora.getMinutes() / 60); // ej. 8.5 = 8:30
-            const dia   = (diaSim !== undefined) ? diaSim : ahora.getDay(); // 0=Dom, 1=Lun, ..., 6=Sáb
+            const dia   = (diaSim !== undefined) ? diaSim : ((simAplicada && typeof simDiaSemana === "function" && simDiaSemana(simAplicada.dia) !== undefined) ? simDiaSemana(simAplicada.dia) : ahora.getDay()); // 0=Dom, 1=Lun, ..., 6=Sáb
 
             // Madrugada: todos los días (23:00-6:00)
             if (hora >= 23 || hora < 6) return 1.4;
@@ -1239,12 +1248,17 @@
             return `${ahora.getHours().toString().padStart(2,'0')}:${ahora.getMinutes().toString().padStart(2,'0')}`;
         }
         let horaSalidaRuta = obtenerHoraActualHHMM();
+        let simAplicada = null; // {dia, hora, diaPrev} cuando el admin aplica una simulación a todas las rutas
         let horaSalidaEditadaManualmente = false; // Si el usuario la cambia a mano, dejamos de autoactualizarla
         let llegadasEstimadasPorCliente = {}; // id cliente -> "HH:MM" estimado de llegada
         let trayectosMinutosPorCliente  = {}; // id cliente -> minutos de trayecto al llegar a ese punto
 
         // Minutos desde medianoche de la hora de salida: la elegida a mano o, si no, la hora actual
         function minutosSalidaBase() {
+            if (simAplicada && /^\d{1,2}:\d{2}$/.test(simAplicada.hora || "")) {
+                const [hs, ms] = simAplicada.hora.split(":").map(Number);
+                return hs * 60 + ms;
+            }
             if (horaSalidaEditadaManualmente && /^\d{1,2}:\d{2}$/.test(horaSalidaRuta || "")) {
                 const [h, m] = horaSalidaRuta.split(":").map(Number);
                 return h * 60 + m;
@@ -1253,6 +1267,7 @@
             return a.getHours() * 60 + a.getMinutes();
         }
         function restablecerHoraSalidaAuto() {
+            if (simAplicada && typeof simVolverAutomatico === "function") { simVolverAutomatico(); }
             horaSalidaEditadaManualmente = false;
             horaSalidaRuta = obtenerHoraActualHHMM();
             const input = document.getElementById("hora-salida-ruta");
@@ -1656,6 +1671,12 @@
                                          ? parseInt(item.cte) : null;
                         const rutaNube = (item.ruta || "").toString().trim();
 
+                        const _pend = window.admOrdenPendiente;
+                        if (_pend && Date.now() < _pend.hasta && _pend.esperado[String(item.id)]) {
+                            const e = _pend.esperado[String(item.id)];
+                            if (rutaNube === e.ruta && cteNube === e.cte) delete _pend.esperado[String(item.id)]; // Sheets ya lo tiene
+                            else return; // aún no llega el nuevo orden a Sheets: no pisar el orden local
+                        }
                         if (cl.rutaAsignadaBase !== rutaNube || cl.cte !== cteNube) {
                             cl.rutaAsignadaBase = rutaNube;
                             cl.cte              = cteNube;
@@ -2715,7 +2736,9 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             return grupo;
         }
 
-        function trazarLineasYCalcularTiemposOSRM() {
+        // forzarIdx: índices de ruta que se deben recalcular (tiempos y horas) aunque el filtro de ruta
+        // activo sea otro; esas rutas no se dibujan en el mapa si el filtro las oculta.
+        function trazarLineasYCalcularTiemposOSRM(forzarIdx) {
             lineasRutasCapas.forEach(l => map.removeLayer(l));
             lineasRutasCapas = [];
 
@@ -2723,7 +2746,8 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             const miTokenTrazado = _tokenTrazadoRutas;
 
             rutasEstructuradas.forEach((listaRuta, indiceRuta) => {
-                if (rutaActivaFiltrada !== "todas" && parseInt(rutaActivaFiltrada) !== indiceRuta) return;
+                const _pasaFiltroRuta = rutaActivaFiltrada === "todas" || parseInt(rutaActivaFiltrada) === indiceRuta;
+                if (!_pasaFiltroRuta && !(forzarIdx && forzarIdx.includes(indiceRuta))) return;
 
                 // puntosParaTrazo: filtra por cliente seleccionado (para trazar la línea en el mapa)
                 let puntosValidos = listaRuta.filter(p => 
@@ -2751,7 +2775,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                 let origenGpsParaEstaRuta = null;
                 if (ROL_ACTUAL === "repartidor" && ultimaPosicionGPSVivo && ultimaPosicionGPSVivo.idxRuta === indiceRuta) {
                     origenGpsParaEstaRuta = ultimaPosicionGPSVivo;
-                } else if (ROL_ACTUAL === "admin" && posicionesGPSPorRutaAdmin[indiceRuta]) {
+                } else if (ROL_ACTUAL === "admin" && !simAplicada && posicionesGPSPorRutaAdmin[indiceRuta]) {
                     origenGpsParaEstaRuta = posicionesGPSPorRutaAdmin[indiceRuta];
                 }
                 if (origenGpsParaEstaRuta) {
@@ -2771,8 +2795,10 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                     .then(res => {
                         if (miTokenTrazado !== _tokenTrazadoRutas) return; // ya hay una llamada más reciente, descartar
                         if (res.routes && res.routes[0]) {
-                            let rutaCapa = crearCapaRuta(res.routes[0].geometry, colorRuta).addTo(map);
-                            lineasRutasCapas.push(rutaCapa);
+                            if (_pasaFiltroRuta) {
+                                let rutaCapa = crearCapaRuta(res.routes[0].geometry, colorRuta).addTo(map);
+                                lineasRutasCapas.push(rutaCapa);
+                            }
 
                             // T = tiempo de recorrido (duración OSRM)
                             let segs = res.routes[0].duration;
@@ -3834,11 +3860,52 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                     </label>
                 </div>
                 <button class="verMapa" id="sim-btn" onclick="simEjecutar()">🔮 Calcular llegadas</button>
+                <button class="verMapa sec" id="sim-aplicar" onclick="simAplicarARutas()">🗺️ Aplicar a rutas, mapa y lista</button>
+                <div id="sim-estado-aplic"></div>
                 <input type="search" id="sim-buscar" class="sim-buscar" placeholder="Buscar cliente por nombre…" oninput="simEstado.buscar=this.value; simPintar()">
                 <div id="sim-res"><div class="vacio">Elige el día y la hora de salida, y pulsa <b>Calcular llegadas</b>.</div></div>`;
+            simActualizarUI();
             const sd = document.getElementById("sim-dia"), sh = document.getElementById("sim-hora");
             if (sd) sd.onchange = () => { simEstado.dia = sd.value; simResultados = null; document.getElementById("sim-res").innerHTML = '<div class="vacio">Pulsa <b>Calcular llegadas</b> para el día elegido.</div>'; };
             if (sh) sh.onchange = () => { simEstado.hora = sh.value; };
+        }
+
+        // ── Aplicar la simulación a TODA la vista del administrador (pins, mapa, listas) ──
+        function simActualizarUI() {
+            const chip = document.getElementById("adm-sim-chip");
+            if (chip) {
+                chip.classList.toggle("visible", !!simAplicada && ROL_ACTUAL === "admin");
+                const t = document.getElementById("adm-sim-chip-txt");
+                if (t && simAplicada) t.textContent = "Simulando " + simAplicada.dia + " · " + simAplicada.hora;
+            }
+            const est = document.getElementById("sim-estado-aplic");
+            if (est) {
+                est.innerHTML = simAplicada
+                    ? `<div class="sim-aplic on">🔮 Aplicada a rutas, mapa y lista: <b>${escAdm(simAplicada.dia)} · ${escAdm(simAplicada.hora)}</b><button onclick="simVolverAutomatico()">↺ Volver a automático</button></div>`
+                    : "";
+            }
+            if (typeof actualizarMenuMasAdmin === "function") actualizarMenuMasAdmin();
+        }
+        function simAplicarARutas() {
+            if (ROL_ACTUAL !== "admin") return;
+            const sd = document.getElementById("sim-dia"), sh = document.getElementById("sim-hora");
+            const dia = sd ? sd.value : simEstado.dia, hora = (sh && sh.value) || simEstado.hora || "08:00";
+            if (!dia) return;
+            simEstado.dia = dia; simEstado.hora = hora;
+            const diaPrev = simAplicada ? simAplicada.diaPrev : diaActivoFiltrado;
+            simAplicada = { dia, hora, diaPrev };
+            if (diaActivoFiltrado !== dia) aplicarFiltroDia(dia);
+            else { if (rutasOptimizadasActivas) trazarLineasYCalcularTiemposOSRM(); refrescarMapaYListasVisuales(); }
+            simActualizarUI();
+            if (typeof cambiarTabAdmin === "function" && !esCelularHorizontal()) cambiarTabAdmin("mapa");
+        }
+        function simVolverAutomatico() {
+            if (!simAplicada) return;
+            const prev = simAplicada.diaPrev;
+            simAplicada = null;
+            if (prev && prev !== diaActivoFiltrado && [...document.getElementById("filtro-dia").options].some(o => o.value === prev)) aplicarFiltroDia(prev);
+            else { if (rutasOptimizadasActivas) trazarLineasYCalcularTiemposOSRM(); refrescarMapaYListasVisuales(); }
+            simActualizarUI();
         }
         async function simEjecutar() {
             const btn = document.getElementById("sim-btn"), res = document.getElementById("sim-res");
@@ -3915,8 +3982,8 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             }
             const h = document.getElementById("hora-salida-ruta");
             const inp = document.getElementById("mas-inp-hora");
-            if (h && inp) { if (horaSalidaEditadaManualmente) h.value = horaSalidaRuta; inp.value = h.value; const sh = document.getElementById("mas-sub-hora"); if (sh) sh.textContent = horaSalidaEditadaManualmente ? horaSalidaRuta + " · fija" : "Automática (" + (h.value || "ahora") + ")"; }
-            const fa = document.getElementById("mas-fila-auto"); if (fa) fa.style.display = horaSalidaEditadaManualmente ? "" : "none";
+            if (h && inp) { if (horaSalidaEditadaManualmente) h.value = horaSalidaRuta; inp.value = h.value; const sh = document.getElementById("mas-sub-hora"); if (sh) sh.textContent = simAplicada ? "🔮 Simulada: " + simAplicada.dia + " " + simAplicada.hora : (horaSalidaEditadaManualmente ? horaSalidaRuta + " · fija" : "Automática (" + (h.value || "ahora") + ")"); }
+            const fa = document.getElementById("mas-fila-auto"); if (fa) fa.style.display = (horaSalidaEditadaManualmente || simAplicada) ? "" : "none";
         }
 
         function sincronizarChipDiaAdmin() {
@@ -4071,6 +4138,10 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                 asignaciones.push({ id: p.id, nombre: p.nombre, ruta: `Ruta ${idxRuta + 1}`, cte: p.cte });
             });
             window.admOrdenBloqueoHasta = Date.now() + 9000;
+            // Orden esperado en la nube: la sincronización no lo revierte hasta que Sheets lo confirme (máx. 60 s)
+            const _esp = (window.admOrdenPendiente && Date.now() < window.admOrdenPendiente.hasta) ? window.admOrdenPendiente.esperado : {};
+            asignaciones.forEach(a => { _esp[String(a.id)] = { ruta: a.ruta, cte: a.cte }; });
+            window.admOrdenPendiente = { hasta: Date.now() + 60000, esperado: _esp };
             fetch(URL_GOOGLE_SCRIPT, {
                 method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ accion: "guardar_rutas_masivo", asignaciones })
@@ -4082,7 +4153,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             refrescarMapaYListasVisuales();
             clearTimeout(_admTimerTrazo);
             // Se recalculan línea y horas de llegada de esa ruta (con una breve espera para no saturar el servicio de rutas)
-            _admTimerTrazo = setTimeout(() => { trazarRutasEspecificas([idxRuta]); }, 400);
+            _admTimerTrazo = setTimeout(() => { trazarLineasYCalcularTiemposOSRM([idxRuta]); }, 400);
         }
 
         function admMoverCliente(idxRuta, id, dir) {
