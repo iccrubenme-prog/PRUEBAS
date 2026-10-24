@@ -1671,6 +1671,11 @@
                                          ? parseInt(item.cte) : null;
                         const rutaNube = (item.ruta || "").toString().trim();
 
+                        // ── Coordenadas (por si se agregó o quitó la geolocalización en la hoja) ──
+                        const _pg = procesarCoordenadasDirectas(item.coordenadasDirectas);
+                        const _lat = _pg ? _pg.lat : null, _lng = _pg ? _pg.lng : null;
+                        if (cl.lat !== _lat || cl.lng !== _lng) { cl.lat = _lat; cl.lng = _lng; huboCambiosOrden = true; }
+
                         const _pend = window.admOrdenPendiente;
                         if (_pend && Date.now() < _pend.hasta && _pend.esperado[String(item.id)]) {
                             const e = _pend.esperado[String(item.id)];
@@ -1684,9 +1689,19 @@
                         }
                     });
 
+                    // Clientes que ya no existen en la hoja (fila eliminada, p. ej. pedido cancelado): se quitan también aquí
+                    if (datosNube.length > 0) {
+                        const idsNube = new Set(datosNube.map(i => String(i.id)));
+                        if (clientes.some(c => !idsNube.has(String(c.id)))) {
+                            clientes = clientes.filter(c => idsNube.has(String(c.id)));
+                            huboCambiosOrden = true;
+                        }
+                    }
+
                     if (huboCambiosOrden) {
                         // Reconstruir rutasEstructuradas respetando ruta + cte de la nube
                         reconstruirRutasEstructuradasDesdeClientes();
+                        if (typeof construirListaCheckboxClientes === "function") construirListaCheckboxClientes();
 
                         actualizarSelectoresDeRutaDinamicos();
                         refrescarMapaYListasVisuales();
@@ -1890,6 +1905,45 @@
             );
         }
 
+        // Número que se muestra (pin, listas, tarjeta): posición consecutiva dentro de su ruta y su día,
+        // según el orden de visita (#Cte). Así no quedan huecos si un cliente salió de la ruta
+        // (por ejemplo, al quitarle la geolocalización).
+        function numeroVisibleCliente(p) {
+            if (!p || p.cte === null || p.cte === undefined || p.cte === "") return null;
+            for (const ruta of rutasEstructuradas) {
+                const pos = ruta.indexOf(p);
+                if (pos < 0) continue;
+                const dia = String(p.dia || "");
+                let rank = 1;
+                ruta.forEach((q, k) => {
+                    if (!q || q.id === 0 || String(q.dia || "") !== dia || q.cte === null || q.cte === undefined) return;
+                    if (q.cte < p.cte || (q.cte === p.cte && k < pos)) rank++;
+                });
+                return rank;
+            }
+            return p.cte;
+        }
+
+        // Cada vez que la app manda un nuevo orden a Sheets ("guardar_rutas_masivo"), se anota como pendiente:
+        // la sincronización ligera no lo revierte mientras Sheets aún no lo refleje (máx. 60 s).
+        function registrarOrdenPendiente(asignaciones) {
+            const esp = (window.admOrdenPendiente && Date.now() < window.admOrdenPendiente.hasta) ? window.admOrdenPendiente.esperado : {};
+            asignaciones.forEach(a => { if (a && a.cte !== undefined && a.cte !== null) esp[String(a.id)] = { ruta: a.ruta, cte: a.cte }; });
+            window.admOrdenPendiente = { hasta: Date.now() + 60000, esperado: esp };
+        }
+        (function () {
+            const fetchOriginal = window.fetch.bind(window);
+            window.fetch = function (url, opts) {
+                try {
+                    if (opts && typeof opts.body === "string" && opts.body.indexOf('"guardar_rutas_masivo"') >= 0) {
+                        const o = JSON.parse(opts.body);
+                        if (Array.isArray(o.asignaciones)) registrarOrdenPendiente(o.asignaciones);
+                    }
+                } catch (e) {}
+                return fetchOriginal(url, opts);
+            };
+        })();
+
         function reconstruirRutasEstructuradasDesdeClientes() {
             let tieneRutasAsignadas = clientes.some(c => c.rutaAsignadaBase && c.rutaAsignadaBase.toLowerCase().includes("ruta"));
 
@@ -1909,6 +1963,9 @@
                     // se reutiliza entre días distintos, así que sin este filtro se mezclan
                     // clientes de días diferentes en la misma ruta, rompiendo la secuencia de #Cte.
                     if (!clienteEnDiaActivo(c)) return;
+                    // Un cliente sin coordenadas no puede trazarse en ninguna ruta, así que
+                    // queda fuera de ellas y se lista en "Sin ruta" (sin ubicación).
+                    if (c.lat === null || c.lat === undefined || c.lng === null || c.lng === undefined) return;
                     let match = c.rutaAsignadaBase.match(/ruta\s*(\d+)/i);
                     if (match) {
                         let idx = parseInt(match[1]) - 1;
@@ -2259,7 +2316,7 @@
                     numeroPin++;
                     // Si el cliente tiene orden fijo guardado (cte), usarlo como número del pin
                     // para que el orden visual no cambie aunque el cliente haya sido movido al final tras entrega
-                    const numeroPinMostrar = (punto.cte !== null && punto.cte !== undefined) ? punto.cte : numeroPin;
+                    const numeroPinMostrar = (numeroVisibleCliente(punto) !== null) ? numeroVisibleCliente(punto) : numeroPin;
 
                     let colorMarcadorFinal = punto.entregado ? COLOR_ENTREGADO : colorFichaActual;
 
@@ -4191,7 +4248,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             const nombres = construirMapaNombresPorRuta();
             if (admDetalle.tipo === "sinruta") {
                 const lista = clientesSinRutaFiltrados();
-                titulo.innerHTML = `Clientes sin ruta<small>${plAdm(lista.length,'cliente')} · sin repartidor asignado</small>`;
+                titulo.innerHTML = `Clientes sin ruta<small>${plAdm(lista.length,'cliente')} · sin ruta o sin ubicación</small>`;
                 const cobro = lista.reduce((a, p) => a + (parseFloat(p.monto) || 0), 0);
                 let html = `<div class="resumen"><div>Clientes<b>${lista.length}</b></div><div>Cobro<b>$${cobro.toLocaleString('es-MX', {maximumFractionDigits: 0})}</b></div><div>Sin ubicación<b>${lista.filter(c => c.lat === null || c.lng === null).length}</b></div></div>`;
                 if (lista.length) html += `<button class="verMapa" onclick="verSinRutaEnMapaAdmin()">🗺️ Ver estos clientes en el mapa</button>`;
@@ -4203,7 +4260,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                     const dia = c.dia ? escAdm(c.dia) : "Sin día";
                     return `<div class="cli" role="button" tabindex="0" onclick="enfocarEnMapaAdmin(${lat}, ${lng})">
                         <div class="num" style="background:#95a5a6">${i + 1}</div>
-                        <div class="tx"><b>${escAdm(c.nombre)}${pk}</b><small>${escAdm([c.direccion, dia].filter(Boolean).join(" · "))}</small>${(c.notas && String(c.notas).trim()) ? `<span class="nota">📝 ${escAdm(String(c.notas).trim())}</span>` : ""}</div>
+                        <div class="tx"><b>${escAdm(c.nombre)}${pk}</b><small>${escAdm([c.direccion, dia, ((c.lat === null || c.lng === null) && /ruta\s*\d+/i.test(c.rutaAsignadaBase || "")) ? (c.rutaAsignadaBase + " · falta ubicación") : ""].filter(Boolean).join(" · "))}</small>${(c.notas && String(c.notas).trim()) ? `<span class="nota">📝 ${escAdm(String(c.notas).trim())}</span>` : ""}</div>
                         <span class="est pen">${(c.lat === null || c.lng === null) ? "Sin ubicación" : "Sin ruta"}</span></div>`;
                 }).join("");
                 cuerpo.innerHTML = html;
@@ -4247,12 +4304,12 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                         const pos = movibles.indexOf(c);
                         const mv = c.entregado ? `<span class="est ok">✓ Entregado</span>` : `<div class="mv"><button aria-label="Subir" ${pos <= 0 ? "disabled" : ""} onclick="admMoverCliente(${idx}, '${c.id}', -1)">▲</button><button aria-label="Bajar" ${pos === movibles.length - 1 ? "disabled" : ""} onclick="admMoverCliente(${idx}, '${c.id}', 1)">▼</button></div>`;
                         return `<div class="cli mov ${c.entregado ? "done" : ""} ${String(admUltimoMovido) === String(c.id) ? "movido" : ""}" data-cid="${c.id}">
-                            <div class="num" style="background:${color}">${escAdm(c.cte ?? "•")}</div>
+                            <div class="num" style="background:${color}">${escAdm(numeroVisibleCliente(c) ?? "•")}</div>
                             <div class="tx"><b>${escAdm(c.nombre)}${pk}</b><small>${escAdm(sub)}</small>${lleg}${nt}</div>
                             ${(!c.entregado) ? `<span class="eta" title="Hora estimada de llegada">${(admPines[idx] && admPines[idx][c.id] !== undefined) ? "📌 " : ""}${eta ? escAdm(eta) : "—"}</span>` : ""}${mv}</div>`;
                     }
                     return `<div class="cli ${c.entregado ? "done" : ""}" role="button" tabindex="0" onclick="enfocarEnMapaAdmin(${lat}, ${lng})">
-                        <div class="num" style="background:${color}">${escAdm(c.cte ?? "•")}</div>
+                        <div class="num" style="background:${color}">${escAdm(numeroVisibleCliente(c) ?? "•")}</div>
                         <div class="tx"><b>${escAdm(c.nombre)}${pk}</b><small>${escAdm(sub)}</small>${lleg}${nt}</div>
                         <span class="est ${c.entregado ? "ok" : "pen"}">${c.entregado ? "✓ Entregado" : "Pendiente"}</span></div>`;
                 }).join("");
@@ -4559,7 +4616,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                 // Tocar la tarjeta del cliente acerca el mapa a su ubicación
                 card.onclick = () => enfocarYResaltarCliente(cliente.id, cliente.lat, cliente.lng);
                 card.title = "Ver en el mapa";
-                document.getElementById("app-cliente-num").textContent = (cliente.cte !== undefined && cliente.cte !== null && cliente.cte !== "") ? cliente.cte : "•";
+                { const nv = numeroVisibleCliente(cliente); document.getElementById("app-cliente-num").textContent = (nv !== null) ? nv : "•"; }
                 document.getElementById("app-cliente-nombre").textContent = cliente.nombre || "Cliente";
                 document.getElementById("app-cliente-dir").textContent = cliente.direccion || "";
                 const elNotas = document.getElementById("app-cliente-notas");
@@ -5284,6 +5341,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                 // su propio fondo/borde/padding en pantalla.
                 document.getElementById("bloque-control-rutas").style.display = "none";
             }
+            if (ROL_ACTUAL === "admin") { reconstruirRutasEstructuradasDesdeClientes(); if (typeof actualizarSelectoresDeRutaDinamicos === "function") actualizarSelectoresDeRutaDinamicos(); }
             refrescarMapaYListasVisuales();
             if(rutasOptimizadasActivas) trazarLineasYCalcularTiemposOSRM();
 
