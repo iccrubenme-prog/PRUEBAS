@@ -3735,7 +3735,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             b.classList.add("visible"); b.classList.remove("recalc");
             document.getElementById("nm-dist").textContent = navFormatoDist(navDistManiobra());
             document.getElementById("nm-instr").textContent = navTextoPaso(p);
-            document.getElementById("nm-calle").textContent = p.tipo === "arrive" ? ((obtenerProximoClientePendiente() || {}).nombre || "") : (p.calle ? "hacia " + p.calle : "");
+            document.getElementById("nm-calle").textContent = p.tipo === "arrive" ? ((navDestinoActual() || {}).nombre || "") : (p.calle ? "hacia " + p.calle : "");
             const ic = document.getElementById("nm-icono"), svg = navIconoPaso(p);
             if (ic.dataset.k !== svg) { ic.innerHTML = svg; ic.dataset.k = svg; }
         }
@@ -3802,12 +3802,22 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                 .then(res => {
                     _tramoSolicitando = false;
                     if (!navModoActivo || ROL_ACTUAL !== "repartidor" || !res.routes || !res.routes[0]) return;
-                    const prox = obtenerProximoClientePendiente();
+                    const prox = navDestinoActual();
                     if (!prox || prox.id !== cliente.id) return; // cambió el destino mientras llegaba la respuesta
                     navConstruirTramo(res.routes[0], cliente.id);
                     if (marcadorMiGpsActual) { const p = marcadorMiGpsActual.getLatLng(); navProcesarPosicion(p.lat, p.lng); }
                 })
                 .catch(() => { _tramoSolicitando = false; });
+        }
+        // Destino de la navegación: el siguiente cliente pendiente; si ya se entregó todo,
+        // el TENATE (para que la vista tipo Maps siga guiando el regreso).
+        function navDestinoActual() {
+            const c = obtenerProximoClientePendiente();
+            if (c) return c;
+            if (ROL_ACTUAL !== "repartidor" || !deposito || deposito.lat == null || deposito.lng == null) return null;
+            const idxRuta = parseInt(rutaActivaFiltrada);
+            if (isNaN(idxRuta) || !rutasEstructuradas[idxRuta] || !rutasEstructuradas[idxRuta].some(p => p.id !== 0)) return null;
+            return { id: 0, nombre: deposito.nombre || "TENATE", lat: deposito.lat, lng: deposito.lng };
         }
         function navProyectar(lat, lng) {
             const t = _tramo, n = t.coords.length;
@@ -3825,7 +3835,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
         }
         function navProcesarPosicion(lat, lng) {
             if (!navModoActivo || ROL_ACTUAL !== "repartidor") return;
-            const cli = obtenerProximoClientePendiente();
+            const cli = navDestinoActual();
             if (!cli || cli.lat === null || cli.lng === null || cli.lat === undefined) { if (_tramo) navLimpiarTramo(); navOcultarBanner(); return; }
             if (!_tramo || _tramo.clienteId !== cli.id) {
                 if (_tramo) { navLimpiarTramo(); navOcultarBanner(); }
