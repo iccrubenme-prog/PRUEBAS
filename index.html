@@ -1042,6 +1042,74 @@
             .cierre-seccion h2 { color:#5a3d26 !important; border-bottom-color:#D7B182 !important; }
             #reporte-cierre-dia { background:#fff !important; }
         }
+
+        /* Cierre de día — KPIs y gráficos */
+        .cierre-kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:26px; }
+        .kpi { background:#fffdf9; border-radius:16px; padding:14px 16px; box-shadow:0 2px 10px rgba(90,61,38,.12); display:flex; flex-direction:column; gap:3px; min-width:0; border-top:4px solid #D7B182; }
+        .kpi-et { font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:#a07a4e; }
+        .kpi-val { font-size:22px; line-height:1.15; color:#5a3d26; white-space:nowrap; }
+        .kpi-val small { font-size:14px; font-weight:600; color:#8a7560; }
+        .kpi-sub { font-size:12px; color:#8a7560; }
+        .kpi-dest { background:linear-gradient(135deg,#f1e4d0,#fffdf9); border-top-color:#5a3d26; }
+        .kpi-dest .kpi-val { font-size:24px; }
+        .kpi-alerta { border-top-color:#c97b63; }
+        .kpi-alerta .kpi-val { color:#a8553f; }
+        .kpi-barra { display:block; height:6px; border-radius:6px; background:#f0e6d8; margin-top:5px; overflow:hidden; }
+        .kpi-barra i { display:block; height:100%; background:#8fae7e; border-radius:6px; }
+        .cierre-graficos { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px; }
+        .cg-card { background:#fffdf9; border-radius:16px; padding:14px 16px; box-shadow:0 2px 10px rgba(90,61,38,.12); min-width:0; break-inside:avoid; }
+        .cg-card h3 { margin:0 0 10px; font-size:13px; color:#5a3d26; }
+        .cg-nota { margin:10px 0 0; font-size:11px; color:#8a7560; }
+        .sw { display:inline-block; width:10px; height:10px; border-radius:3px; vertical-align:middle; flex-shrink:0; }
+        .cg-donut { display:flex; align-items:center; gap:14px; flex-wrap:wrap; justify-content:center; }
+        .cg-leyenda { list-style:none; margin:0; padding:0; flex:1 1 150px; min-width:0; font-size:12px; color:#3b2a1c; }
+        .cg-leyenda li { display:flex; align-items:center; gap:7px; padding:4px 0; border-bottom:1px solid #f0e6d8; }
+        .cg-leyenda li:last-child { border-bottom:none; }
+        .cg-leyenda .lb { flex:1; min-width:0; line-height:1.2; }
+        .cg-leyenda b { color:#5a3d26; white-space:nowrap; }
+        .cg-barras { display:flex; flex-direction:column; gap:9px; }
+        .cg-fila { display:grid; grid-template-columns:minmax(64px,28%) 1fr auto; align-items:center; gap:8px; font-size:12px; color:#3b2a1c; }
+        .cg-fila .lb { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .cg-fila .pista { display:flex; height:14px; background:#f5ece3; border-radius:8px; overflow:hidden; }
+        .cg-fila .pista i { display:block; height:100%; }
+        .cg-fila b { color:#5a3d26; white-space:nowrap; font-size:11.5px; }
+        .cg-vacio { color:#8a7560; font-size:12px; padding:10px 0; text-align:center; }
+        @media (max-width: 700px) {
+            .cierre-kpis { grid-template-columns:1fr 1fr; gap:8px; }
+            .kpi { padding:11px 12px; }
+            .kpi-val { font-size:19px; } .kpi-dest { grid-column:1 / -1; } .kpi-dest .kpi-val { font-size:25px; }
+            .cierre-graficos { grid-template-columns:1fr; }
+        }
+        @media print {
+            .cierre-kpis { grid-template-columns:repeat(6,1fr) !important; gap:5px !important; margin-bottom:8px !important; }
+            .kpi { padding:5px 7px !important; box-shadow:none !important; border:1px solid #e6d6bf; border-top:3px solid #D7B182; border-radius:8px !important; break-inside:avoid; }
+            .kpi-et { font-size:7px !important; } .kpi-val { font-size:12px !important; } .kpi-dest .kpi-val { font-size:13px !important; } .kpi-sub { font-size:7px !important; }
+            .cierre-graficos { grid-template-columns:1fr 1fr !important; gap:6px !important; }
+            .cg-card { padding:6px 8px !important; box-shadow:none !important; border:1px solid #e6d6bf; }
+            .cg-card h3 { font-size:9px !important; margin-bottom:4px !important; }
+            .cg-donut svg { width:80px !important; height:80px !important; }
+            .cg-leyenda, .cg-fila { font-size:8px !important; } .cg-fila b { font-size:8px !important; } .cg-fila .pista { height:9px !important; } .cg-nota { font-size:7px !important; margin-top:4px !important; }
+            .kpi-barra, .kpi-barra i, .cg-fila .pista, .cg-fila .pista i, .sw, svg circle { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+        }
+
+        @media print {
+            .cierre-header { padding:6px 12px !important; border-radius:0 !important; }
+            .cierre-header .cierre-logo { width:28px !important; height:28px !important; }
+            .cierre-body { padding:6px 10px !important; }
+            .cierre-meta { margin-bottom:5px !important; }
+            .cierre-seccion { margin-bottom:6px !important; }
+            .cierre-seccion:has(.cierre-graficos) { break-inside:auto; }
+            .cierre-dos-columnas { gap:10px !important; }
+            .cierre-tabla td { padding:2px 6px !important; }
+            #cierre-contenido > div[style*="font-weight:700"] { display:none !important; }
+            .cierre-graficos { grid-template-columns:repeat(auto-fit,minmax(130px,1fr)) !important; }
+            .cg-card { break-inside:avoid; }
+            .cg-donut { flex-direction:column !important; gap:2px !important; }
+            .cg-donut svg { width:70px !important; height:70px !important; }
+            .cg-leyenda { flex:none !important; width:100% !important; }
+            .cg-leyenda li { padding:1px 0 !important; }
+            .cg-fila { grid-template-columns:minmax(40px,30%) 1fr auto !important; gap:4px !important; }
+        }
 </style>
 </head>
 <body>
@@ -5672,7 +5740,103 @@ return texto.replace(/^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\s]+/u, "").trim();
             // Aseguramos que el Total de la sección de días solo cuente los clientes que aparecen en esa tabla
             // (puede haber días sin entregas si el filtro no los muestra)
 
-            let html = `<div class="cierre-dos-columnas">`;
+
+            // ── KPIs y gráficos (SVG/CSS puro: sin librerías, funciona sin internet y al imprimir) ──
+            const $$ = n => "$" + n.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2});
+            const sumM = arr => arr.reduce((t,c)=>t+(parseFloat(c.monto)||0),0);
+            const pct = (a,b) => b > 0 ? Math.round(a*100/b) : 0;
+            const escH = t => String(t).replace(/[&<>"]/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));
+            const PAL = { entregado:"#8fae7e", pendiente:"#e6d6bf", cafe:"#5a3d26", medio:"#a07a4e", dorado:"#D7B182", terracota:"#c97b63", salvia:"#7d9a8c", gris:"#b9a999" };
+            const COLOR_METODO = { "Efectivo":PAL.entregado, "Tarjeta":PAL.medio, "Transferencia":PAL.dorado, "Pagado":PAL.salvia, "No pagado":PAL.terracota };
+
+            const todosDia = clientesTodosDelDia;
+            const nTodos = todosDia.length;
+            const nEntr = clientesFiltrados.length;
+            const nPend = Math.max(0, nTodos - nEntr);
+            const ventas = sumM(clientesFiltrados);
+            const porEntregar = sumM(todosDia.filter(c => !c.entregado));
+            const porCobrar = sumM(clientesFiltrados.filter(c => (c.metodoPago||"").trim() === "No pagado"));
+            const cobrado = ventas - porCobrar;
+            const ticket = nEntr ? ventas / nEntr : 0;
+            const avance = pct(nEntr, nTodos);
+            const rutasSet = new Set(todosDia.map(c => (c.ruta || "").trim()).filter(Boolean));
+
+            function donut(items, centro, sub) {
+                const tot = items.reduce((t,i)=>t+i.val,0);
+                const C = 2*Math.PI*40; let off = 0, arcs = "";
+                if (tot > 0) items.filter(i=>i.val>0).forEach(i => {
+                    const len = C * i.val / tot;
+                    arcs += `<circle cx="60" cy="60" r="40" fill="none" stroke="${i.color}" stroke-width="16" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" transform="rotate(-90 60 60)"/>`;
+                    off += len;
+                });
+                const leyenda = items.map(i => `<li><span class="sw" style="background:${i.color}"></span><span class="lb">${escH(i.label)}</span><b>${i.txt}</b></li>`).join("");
+                return `<div class="cg-donut"><svg viewBox="0 0 120 120" width="132" height="132" role="img"><circle cx="60" cy="60" r="40" fill="none" stroke="#f0e6d8" stroke-width="16"/>${arcs}
+                    <text x="60" y="58" text-anchor="middle" font-size="18" font-weight="700" fill="#5a3d26">${centro}</text>
+                    <text x="60" y="73" text-anchor="middle" font-size="8" fill="#8a7560">${sub}</text></svg>
+                    <ul class="cg-leyenda">${leyenda}</ul></div>`;
+            }
+            // Barras horizontales; cada fila: {label, segs:[{val,color}], txt}
+            function barras(filas) {
+                const max = Math.max(0, ...filas.map(f => f.segs.reduce((t,x)=>t+x.val,0)));
+                if (!filas.length || max <= 0) return `<div class="cg-vacio">Sin datos</div>`;
+                return `<div class="cg-barras">` + filas.map(f => {
+                    const segs = f.segs.filter(x=>x.val>0).map(x => `<i style="width:${x.val*100/max}%;background:${x.color}"></i>`).join("");
+                    return `<div class="cg-fila"><span class="lb" title="${escH(f.label)}">${escH(f.label)}</span><span class="pista">${segs}</span><b>${f.txt}</b></div>`;
+                }).join("") + `</div>`;
+            }
+            const card = (titulo, cuerpo, nota) => `<div class="cg-card"><h3>${titulo}</h3>${cuerpo}${nota ? `<p class="cg-nota">${nota}</p>` : ""}</div>`;
+
+            function cierreKpisHTML() {
+                const k = (cls, etiqueta, valor, sub, extra) => `<div class="kpi ${cls}"><span class="kpi-et">${etiqueta}</span><b class="kpi-val">${valor}</b><span class="kpi-sub">${sub}</span>${extra||""}</div>`;
+                return `<div class="cierre-kpis">` +
+                    k("kpi-dest", "Ventas del día", $$(ventas), `${nEntr} entregas · ${$$(cobrado)} cobrado`) +
+                    k("", "Paquetes totales", nTodos, `${rutasSet.size} ruta${rutasSet.size===1?"":"s"} · ${nPend} por entregar`) +
+                    k("", "Entregados", `${nEntr}<small> / ${nTodos}</small>`, `${avance}% de avance`, `<span class="kpi-barra"><i style="width:${avance}%"></i></span>`) +
+                    k("", "Ticket promedio", $$(ticket), "por entrega realizada") +
+                    k("", "Por entregar", $$(porEntregar), `${nPend} paquete${nPend===1?"":"s"} pendiente${nPend===1?"":"s"}`) +
+                    k(porCobrar > 0 ? "kpi-alerta" : "", "Por cobrar", $$(porCobrar), "entregado sin pagar") +
+                `</div>`;
+            }
+
+            function cierreGraficosHTML() {
+                let g = `<div class="cierre-seccion"><h2>Gráficos del día</h2><div class="cierre-graficos">`;
+                // 2. Ventas por método de pago
+                const porMetodo = metodos.map(m => ({ label: etiquetasMetodo[m] || m, val: sumM(clientesFiltrados.filter(c => (c.metodoPago||"").trim() === m)), color: COLOR_METODO[m] }))
+                    .map(i => ({ ...i, txt: $$(i.val) }));
+                const sinMetodo = ventas - porMetodo.reduce((t,i)=>t+i.val,0);
+                if (sinMetodo > 0.005) porMetodo.push({ label:"Sin método", val:sinMetodo, color:PAL.gris, txt:$$(sinMetodo) });
+                g += card("Ventas por método de pago", donut(porMetodo.filter(i=>i.val>0), $$(ventas).replace(/\.00$/,""), "ventas"));
+                // 3. Paquetes por tipo (entregados vs pendientes)
+                const porTipo = tiposPedido.map(t => {
+                    const todos = todosDia.filter(c => (c.pedido||"Sin tipo").trim() === t);
+                    const e = todos.filter(c => c.entregado).length;
+                    return { label:t, segs:[{val:e,color:PAL.entregado},{val:todos.length-e,color:PAL.pendiente}], txt:`${e}/${todos.length}` };
+                }).filter(f => f.segs[0].val + f.segs[1].val > 0);
+                g += card("Paquetes por tipo", barras(porTipo), `<span class="sw" style="background:${PAL.entregado}"></span> entregados &nbsp; <span class="sw" style="background:${PAL.pendiente}"></span> pendientes`);
+                // 4. Ventas por tipo de paquete
+                const ventasTipo = tiposPedido.map(t => ({ label:t, segs:[{val:sumM(clientesFiltrados.filter(c => (c.pedido||"Sin tipo").trim() === t)), color:PAL.medio}] }))
+                    .map(f => ({ ...f, txt:$$(f.segs[0].val) })).filter(f => f.segs[0].val > 0);
+                g += card("Ventas por tipo de paquete", barras(ventasTipo));
+                // 5. Avance por ruta
+                if (rutasSet.size > 1) {
+                    const porRuta = [...rutasSet].sort().map(r => {
+                        const todos = todosDia.filter(c => (c.ruta||"").trim() === r);
+                        const e = todos.filter(c => c.entregado);
+                        return { label:r, segs:[{val:e.length,color:PAL.entregado},{val:todos.length-e.length,color:PAL.pendiente}], txt:`${e.length}/${todos.length} · ${$$(sumM(e))}` };
+                    });
+                    g += card("Avance y ventas por ruta", barras(porRuta), `<span class="sw" style="background:${PAL.entregado}"></span> entregados &nbsp; <span class="sw" style="background:${PAL.pendiente}"></span> pendientes`);
+                }
+                // 6. Ventas por día
+                if (diasUnicos.length > 1) {
+                    const porDia = diasUnicos.map(d => ({ label:d, segs:[{val:sumM(clientesFiltrados.filter(c => (c.dia||"Sin día").trim() === d)), color:PAL.cafe}] }))
+                        .map(f => ({ ...f, txt:$$(f.segs[0].val) }));
+                    g += card("Ventas por día", barras(porDia));
+                }
+                return g + `</div></div>`;
+            }
+
+            let html = cierreKpisHTML();
+            html += `<div class="cierre-dos-columnas">`;
             html += renderTabla("Conteo de Paquetes por Método de Pago", tiposPedido, metodos, matrizMetodo, fmtN, "");
             html += renderTabla("Conteo de Paquetes por Día (incluye pendientes)", tiposPedido, diasUnicosTodos, matrizDiaTodos, fmtN, "");
             html += `</div>`;
@@ -5682,6 +5846,7 @@ return texto.replace(/^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\s]+/u, "").trim();
             html += renderTabla("Ingreso por Día", tiposPedido, diasUnicos, matrizDia, fmtM, "$");
             html += `</div>`;
 
+            html += cierreGraficosHTML();
             document.getElementById("cierre-contenido").innerHTML = html;
             document.getElementById("reporte-cierre-dia").style.display = "block";
             window._cierreDatos = { clientesFiltrados, tiposPedido, metodos, diasUnicos, matrizMetodo, matrizDia, diaActivoFiltrado };
