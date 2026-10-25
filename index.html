@@ -128,11 +128,11 @@
         /* ===== Reporte Cierre de Día ===== */
         #reporte-cierre-dia {
             display:none; position:fixed; inset:0; z-index:40000;
-            background:#f0f4f8; overflow-y:auto;
+            background:#f5ece3; overflow-y:auto;
             font-family:'Segoe UI',Arial,sans-serif;
         }
         .cierre-header {
-            background:#1a3c5e; color:#fff; padding:16px 28px;
+            background:#5a3d26; color:#fff; padding:16px 28px;
             display:flex; justify-content:space-between; align-items:center;
             position:sticky; top:0; z-index:10;
         }
@@ -142,29 +142,29 @@
             padding:8px 16px; border:none; border-radius:6px; cursor:pointer;
             font-size:13px; font-weight:bold;
         }
-        .cierre-btn-excel { background:#27ae60; color:#fff; }
-        .cierre-btn-print { background:#e67e22; color:#fff; }
+        .cierre-btn-excel { background:#a07a4e; color:#fff; }
+        .cierre-btn-print { background:#D7B182; color:#3b2a1c; }
         .cierre-btn-cerrar { background:rgba(255,255,255,.2); color:#fff; font-size:18px; padding:6px 12px; }
         .cierre-body { padding:24px 28px; max-width:1100px; margin:0 auto; }
-        .cierre-meta { font-size:13px; color:#666; margin-bottom:20px; }
+        .cierre-meta { font-size:13px; color:#8a7560; margin-bottom:20px; }
         .cierre-seccion { margin-bottom:32px; }
         .cierre-seccion h2 {
-            font-size:15px; font-weight:700; color:#1a3c5e;
-            border-bottom:2px solid #1a3c5e; padding-bottom:6px; margin-bottom:12px;
+            font-size:15px; font-weight:700; color:#5a3d26;
+            border-bottom:2px solid #5a3d26; padding-bottom:6px; margin-bottom:12px;
         }
         .cierre-tabla {
             width:100%; border-collapse:collapse; font-size:13px;
-            background:#fff; border-radius:8px; overflow:hidden;
-            box-shadow:0 2px 8px rgba(0,0,0,.08);
+            background:#fffdf9; border-radius:8px; overflow:hidden;
+            box-shadow:0 2px 8px rgba(90,61,38,.12);
         }
         .cierre-tabla th {
-            background:#1a3c5e; color:#fff; padding:9px 12px; text-align:right;
+            background:#5a3d26; color:#fff; padding:9px 12px; text-align:right;
         }
         .cierre-tabla th:first-child { text-align:left; }
-        .cierre-tabla td { padding:8px 12px; border-bottom:1px solid #edf2f7; text-align:right; }
+        .cierre-tabla td { padding:8px 12px; border-bottom:1px solid #f0e6d8; text-align:right; }
         .cierre-tabla td:first-child { text-align:left; font-weight:600; }
         .cierre-tabla tr.fila-total td {
-            background:#eaf1f8; font-weight:700; border-top:2px solid #1a3c5e;
+            background:#f1e4d0; font-weight:700; border-top:2px solid #5a3d26;
         }
         .cierre-dos-columnas { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
         @media(max-width:700px){ .cierre-dos-columnas { grid-template-columns:1fr; } }
@@ -177,7 +177,7 @@
                 background:#fff; overflow:visible !important;
             }
             .cierre-header {
-                position:static !important; background:#1a3c5e !important;
+                position:static !important; background:#5a3d26 !important;
                 padding:10px 16px !important;
             }
             .cierre-header-btns { display:none !important; }
@@ -190,9 +190,9 @@
             .cierre-seccion { margin-bottom:10px !important; break-inside:avoid; }
             .cierre-seccion h2 { font-size:10px !important; padding-bottom:3px !important; margin-bottom:6px !important; }
             .cierre-tabla { font-size:9px !important; box-shadow:none !important; }
-            .cierre-tabla th { background:#1a3c5e !important; color:#fff !important; padding:4px 6px !important; }
+            .cierre-tabla th { background:#5a3d26 !important; color:#fff !important; padding:4px 6px !important; }
             .cierre-tabla td { padding:3px 6px !important; }
-            .cierre-tabla tr.fila-total td { background:#eaf1f8 !important; }
+            .cierre-tabla tr.fila-total td { background:#f1e4d0 !important; }
             div[style*="font-weight:700"][style*="color:#27ae60"] { font-size:11px !important; margin:6px 0 8px !important; }
         }
         #modal-resumen-rutas {
@@ -977,6 +977,71 @@
         body.mapa-solo.vista-admin #adm-top, body.mapa-solo.vista-repartidor #nav-barra-superior { left: 10px !important; right: 10px !important; width: auto !important; max-width: 560px; box-sizing: border-box; }
         body.vista-repartidor .leaflet-top.leaflet-left { display: none !important; } /* el ⛶ del repartidor es el botón circular */
         @media (max-height: 540px) and (orientation: landscape) { body.vista-repartidor #nav-botones-circulares { top: 64px !important; } }
+
+        /* Cierre de día: lectura cómoda en celular */
+        .cierre-scroll { border-radius: 8px; }
+        .cierre-dos-columnas > * { min-width: 0; }
+        @media (max-width: 700px) {
+            .cierre-header { padding: 10px 12px; flex-wrap: wrap; gap: 8px; }
+            .cierre-header h1 { font-size: 16px; flex: 1 1 100%; line-height: 1.25; }
+            .cierre-header-btns { width: 100%; gap: 8px; }
+            .cierre-btn-accion { flex: 1 1 0; padding: 10px 8px; font-size: 12px; }
+            .cierre-btn-cerrar { flex: 0 0 auto; padding: 8px 14px; }
+            .cierre-body { padding: 12px 10px 28px; }
+            .cierre-meta { font-size: 12px; line-height: 1.5; margin-bottom: 14px; }
+            .cierre-seccion { margin-bottom: 18px; }
+            .cierre-seccion h2 { font-size: 14px; }
+            .cierre-dos-columnas { gap: 18px; }
+            .cierre-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; box-shadow: 0 2px 8px rgba(0,0,0,.08); background: #fffdf9; }
+            .cierre-tabla { font-size: 12px; box-shadow: none; border-radius: 0; }
+            .cierre-tabla th { padding: 7px 6px; font-size: 10.5px; line-height: 1.15; white-space: normal; vertical-align: bottom; }
+            .cierre-tabla td { padding: 8px 6px; white-space: nowrap; }
+            .cierre-tabla th:first-child, .cierre-tabla td:first-child { position: sticky; left: 0; z-index: 1; min-width: 78px; max-width: 110px; white-space: normal; }
+            .cierre-tabla td:first-child { background: #fffdf9; box-shadow: 1px 0 0 #f0e6d8; }
+            .cierre-tabla tr.fila-total td:first-child { background: #f1e4d0; }
+            .cierre-tabla th:first-child { background: #5a3d26; }
+        }
+        @media print { .cierre-scroll { overflow: visible !important; box-shadow: none !important; } }
+
+        /* Cierre de día — diseño suave, igual al banner del Panel Admin */
+        #reporte-cierre-dia { background:#f5ece3; }
+        .cierre-header {
+            background:#fffdf9; color:#5a3d26; border-radius:20px; margin:12px; padding:10px 14px;
+            box-shadow:0 6px 18px rgba(90,61,38,.22); gap:10px; justify-content:flex-start;
+        }
+        .cierre-header .cierre-logo { width:40px; height:40px; object-fit:contain; flex-shrink:0; }
+        .cierre-header h1 { font-size:18px; color:#5a3d26; flex:1; min-width:0; line-height:1.2; }
+        .cierre-header h1 small { display:block; font-size:12px; font-weight:400; color:#a07a4e; margin-top:2px; }
+        .cierre-btn-excel { background:#f1e4d0; color:#5a3d26; }
+        .cierre-btn-print { background:#D7B182; color:#3b2a1c; }
+        .cierre-btn-cerrar { background:#f5ece3; color:#5a3d26; }
+        .cierre-body { max-width:1000px; }
+        .cierre-meta { color:#8a7560; }
+        .cierre-seccion h2 { color:#5a3d26; border-bottom:2px solid #D7B182; }
+        /* Una tabla debajo de otra: ya no se encimaban */
+        .cierre-dos-columnas { grid-template-columns:1fr; gap:0; }
+        .cierre-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; border-radius:14px; box-shadow:0 2px 10px rgba(90,61,38,.12); background:#fffdf9; }
+        .cierre-tabla { box-shadow:none; border-radius:0; background:#fffdf9; }
+        .cierre-tabla th { background:#f1e4d0; color:#5a3d26; border-bottom:2px solid #D7B182; }
+        .cierre-tabla td { border-bottom:1px solid #f0e6d8; color:#3b2a1c; }
+        .cierre-tabla tr.fila-total td { background:#f5ece3; border-top:2px solid #D7B182; color:#5a3d26; }
+        .cierre-tabla th:first-child { background:#f1e4d0; }
+        .cierre-tabla td:first-child { background:#fffdf9; }
+        .cierre-tabla tr.fila-total td:first-child { background:#f5ece3; }
+        @media (max-width: 700px) {
+            .cierre-header { margin:8px; padding:8px 10px; flex-wrap:wrap; }
+            .cierre-header .cierre-logo { width:34px; height:34px; }
+            .cierre-header h1 { flex:1 1 0; font-size:15px; }
+            .cierre-header-btns { flex:1 1 100%; }
+        }
+        @media print {
+            .cierre-header { background:#fffdf9 !important; box-shadow:none !important; border-radius:0 !important; margin:0 !important; border-bottom:2px solid #D7B182; }
+            .cierre-header h1 { color:#5a3d26 !important; }
+            .cierre-tabla th { background:#f1e4d0 !important; color:#5a3d26 !important; }
+            .cierre-tabla tr.fila-total td { background:#f5ece3 !important; }
+            .cierre-seccion h2 { color:#5a3d26 !important; border-bottom-color:#D7B182 !important; }
+            #reporte-cierre-dia { background:#fff !important; }
+        }
 </style>
 </head>
 <body>
@@ -2028,6 +2093,8 @@
             const _fd = document.getElementById("filtro-dia");
             if (_fd && _fd.value !== dia) _fd.value = dia;
             localStorage.setItem("tenate_filtro_dia", dia);
+            // Al cambiar de día, se quitan de la selección los clientes que ya no pertenecen a ese día
+            clientesSeleccionadosFiltro = clientesSeleccionadosFiltro.filter(id => { const c = clientes.find(x => String(x.id) === String(id)); return c && clienteEnDiaActivo(c); });
             reconstruirRutasEstructuradasDesdeClientes();
             actualizarSelectoresDeRutaDinamicos();
             construirListaCheckboxClientes();
@@ -2039,7 +2106,9 @@
             const contenedor = document.getElementById("lista-checkbox-clientes-contenedor");
             contenedor.innerHTML = "";
             
-            let clientesOrdenados = [...clientes].sort((a, b) => a.nombre.localeCompare(b.nombre));
+            // Solo los clientes del día activo (si hay un día elegido, no se mezclan los de otros días)
+            let clientesOrdenados = clientes.filter(c => clienteEnDiaActivo(c)).sort((a, b) => a.nombre.localeCompare(b.nombre));
+            if (clientesOrdenados.length === 0) contenedor.innerHTML = '<div style="padding:8px;color:#8a7560;font-size:13px;">No hay clientes con el filtro de día actual.</div>';
             
             clientesOrdenados.forEach(c => {
                 const label = document.createElement("label");
@@ -2056,7 +2125,7 @@
                 };
                 
                 label.appendChild(checkbox);
-                label.appendChild(document.createTextNode(`${c.nombre}`));
+                label.appendChild(document.createTextNode(`${c.nombre}` + ((diaActivoFiltrado === "todos" && c.dia) ? ` · ${c.dia}` : "")));
                 contenedor.appendChild(label);
             });
         }
@@ -5512,7 +5581,8 @@ return texto.replace(/^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\s]+/u, "").trim();
 
             // Título y meta
             const tituloSufijo = diaActivoFiltrado !== "todos" ? ` — ${etiquetaDiaActivo()}` : "";
-            document.getElementById("cierre-titulo").textContent = `📋 Cierre de Día${tituloSufijo}`;
+            document.getElementById("cierre-titulo").innerHTML = "Cierre de Día" + (tituloSufijo ? `<small>${String(tituloSufijo).replace(/^\s*[—–-]\s*/, "")}</small>` : "");
+            (function(){ var g=document.querySelector(".gate-logo"), l=document.querySelector("#reporte-cierre-dia .cierre-logo"); if (g && l) l.src = g.src; })();
             const total = clientesFiltrados.length;
             const pendientes = clientes.filter(c => !c.entregado && clienteEnDiaActivo(c)).length;
             document.getElementById("cierre-meta").textContent =
@@ -5589,10 +5659,10 @@ return texto.replace(/^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\s]+/u, "").trim();
                 return `
                 <div class="cierre-seccion">
                     <h2>${titulo}</h2>
-                    <table class="cierre-tabla">
+                    <div class="cierre-scroll"><table class="cierre-tabla">
                         <thead><tr><th>Paquetes</th>${colsTh}</tr></thead>
                         <tbody>${rows}</tbody>
-                    </table>
+                    </table></div>
                 </div>`;
             }
 
@@ -5606,7 +5676,7 @@ return texto.replace(/^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\s]+/u, "").trim();
             html += renderTabla("Conteo de Paquetes por Método de Pago", tiposPedido, metodos, matrizMetodo, fmtN, "");
             html += renderTabla("Conteo de Paquetes por Día (incluye pendientes)", tiposPedido, diasUnicosTodos, matrizDiaTodos, fmtN, "");
             html += `</div>`;
-            html += `<div style="margin:8px 0 20px; font-size:13px; font-weight:700; color:#1a3c5e;">Ingreso</div>`;
+            html += `<div style="margin:8px 0 20px; font-size:13px; font-weight:700; color:#5a3d26;">Ingreso</div>`;
             html += `<div class="cierre-dos-columnas">`;
             html += renderTabla("Ingreso por Método de Pago", tiposPedido, metodos, matrizMetodo, fmtM, "$");
             html += renderTabla("Ingreso por Día", tiposPedido, diasUnicos, matrizDia, fmtM, "$");
@@ -5764,10 +5834,11 @@ return texto.replace(/^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\s]+/u, "").trim();
     <!-- Reporte Cierre de Día -->
     <div id="reporte-cierre-dia">
         <div class="cierre-header">
-            <h1 id="cierre-titulo">📋 Cierre de Día</h1>
+            <img class="cierre-logo header-logo" alt="">
+            <h1 id="cierre-titulo">Cierre de Día</h1>
             <div class="cierre-header-btns">
-                <button class="cierre-btn-accion cierre-btn-excel" onclick="exportarCierreExcel()">⬇️ Exportar Excel</button>
-                <button class="cierre-btn-accion cierre-btn-print" onclick="window.print()">🖨️ Imprimir / PDF</button>
+                <button class="cierre-btn-accion cierre-btn-excel" onclick="exportarCierreExcel()">Exportar Excel</button>
+                <button class="cierre-btn-accion cierre-btn-print" onclick="window.print()">Imprimir / PDF</button>
                 <button class="cierre-btn-accion cierre-btn-cerrar" onclick="cerrarCierreDia()">✕</button>
             </div>
         </div>
