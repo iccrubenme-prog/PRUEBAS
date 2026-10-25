@@ -2670,6 +2670,7 @@ if (punto.notas && punto.notas.trim() !== "") {
                     marcador.bindPopup(`
                         <b>${c.nombre}</b>${c.pedido ? ` [${c.pedido}]` : ''}<br>
                         <span style="color:#95a5a6;font-size:11px;">Sin ruta asignada</span><br>
+                        ${c.direccion ? `<div class="popup-info-row-diseño">🏠 <strong>Dir:</strong> ${c.direccion}</div>` : ''}
                         ${c.dia ? `📅 ${c.dia}` : ''}
                         <div class="popup-info-row-diseño" style="margin-top:6px; border-top:1px dashed #ccc; padding-top:4px; flex-direction:column; align-items:stretch;">
                             <strong>Asignar a Ruta:</strong>
