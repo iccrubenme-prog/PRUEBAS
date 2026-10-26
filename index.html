@@ -1386,11 +1386,24 @@
                 return 1.9;
             }
 
-            // Lunes-Viernes
-            if (hora >= 7   && hora < 9.5)  return 3.2; // pico mañana
-            if (hora >= 13  && hora < 15)   return 2.8; // pico mediodía
-            if (hora >= 18  && hora < 20)   return 3.5; // pico tarde (el peor)
-            return 2.2; // flujo normal resto del día
+            // Lunes-Viernes (recalibrado: antes 3.2 / 2.8 / 3.5 / 2.2 inflaba las horas ~2 h en rutas largas)
+            if (hora >= 7   && hora < 9.5)  return 2.5; // pico mañana
+            if (hora >= 13  && hora < 15)   return 2.1; // pico mediodía
+            if (hora >= 18  && hora < 20)   return 2.7; // pico tarde (el peor)
+            return 1.9; // flujo normal resto del día
+        }
+
+        // Tráfico por TRAMO: cada tramo usa el factor de la hora del día en que realmente se recorre
+        // (antes se usaba UN solo factor, el de la hora de salida, para toda la ruta: salir a las
+        // 9:14 aplicaba el factor de hora pico a un recorrido que terminaba a las 13:30).
+        function factorTraficoEnMinuto(minutosDelDia) {
+            return obtenerFactorTrafico((((minutosDelDia % 1440) + 1440) % 1440) / 60);
+        }
+        // Minutos totales de trayecto de una lista de tramos (segundos OSRM), avanzando el reloj
+        function minutosTrayectoConTrafico(legs, salidaMin, minsParada) {
+            let t = salidaMin, total = 0;
+            (legs || []).forEach(l => { const m = (l.duration / 60) * factorTraficoEnMinuto(t); total += m; t += m + (minsParada || 0); });
+            return total;
         }
 
         function obtenerHoraActualHHMM() {
@@ -3035,7 +3048,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                             // Factor corrección tráfico urbano: OSRM no considera semáforos/tráfico
                             const FACTOR_TRAFICO = obtenerFactorTrafico();
                             const MINUTOS_POR_CLIENTE = 10;
-                            let minsRecorrido = Math.round((segs / 60) * FACTOR_TRAFICO);
+                            let minsRecorrido = Math.round(minutosTrayectoConTrafico(res.routes[0].legs, minutosSalidaBase(), MINUTOS_POR_CLIENTE));
                             let textoT = minsRecorrido > 60 ? `${Math.floor(minsRecorrido/60)}h ${minsRecorrido%60}m` : `${minsRecorrido} mins`;
 
                             // R = tiempo de reparto: 10 min por coordenada única (no por cliente)
@@ -3066,7 +3079,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                                         for (let i = 0; i < puntosParaLlegadas.length; i++) {
                                             const punto = puntosParaLlegadas[i];
                                             if (i > 0 && legsLL[i - 1]) {
-                                                _minsTrayectoTramo = (legsLL[i - 1].duration / 60) * FACTOR_TRAFICO;
+                                                _minsTrayectoTramo = (legsLL[i - 1].duration / 60) * factorTraficoEnMinuto(minutosAcumulados);
                                                 minutosAcumulados += _minsTrayectoTramo;
                                             }
                                             if (punto.id !== 0) {
@@ -3138,7 +3151,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                 const actualizarTitulo = (resRoute, puntosUsados, listaRuta, indiceRuta) => {
                     const FACTOR_TRAFICO = obtenerFactorTrafico();
                     const MINUTOS_POR_CLIENTE = 10;
-                    let minsRecorrido = Math.round((resRoute.duration / 60) * FACTOR_TRAFICO);
+                    let minsRecorrido = Math.round(minutosTrayectoConTrafico(resRoute.legs, minutosSalidaBase(), MINUTOS_POR_CLIENTE));
                     let textoT = minsRecorrido > 60 ? `${Math.floor(minsRecorrido/60)}h ${minsRecorrido%60}m` : `${minsRecorrido} mins`;
 
                     const _coordsU2 = new Set(puntosUsados.filter(p => p.id !== 0 && p.lat !== null)
@@ -3158,7 +3171,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                     for (let i = 0; i < puntosUsados.length; i++) {
                         const punto = puntosUsados[i];
                         if (i > 0 && legs[i - 1]) {
-                            _minsTrayecto2 = (legs[i - 1].duration / 60) * FACTOR_TRAFICO;
+                            _minsTrayecto2 = (legs[i - 1].duration / 60) * factorTraficoEnMinuto(minutosAcumulados);
                             minutosAcumulados += _minsTrayecto2;
                         }
                         if (punto.id !== 0) {
@@ -3343,7 +3356,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                         for (let i = 0; i < puntosParaLlegadasVivo.length; i++) {
                             const punto = puntosParaLlegadasVivo[i];
                             if (i > 0 && legsVivo[i - 1]) {
-                                minutosAcumulados += (legsVivo[i - 1].duration / 60) * FACTOR_TRAFICO;
+                                minutosAcumulados += (legsVivo[i - 1].duration / 60) * factorTraficoEnMinuto(minutosAcumulados);
                             }
                             if (punto.id !== 0) {
                                 const ck = `${Math.round(punto.lat*1e6)}_${Math.round(punto.lng*1e6)}`;
@@ -4049,7 +4062,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
                 }
                 let acum = salida, ckPrev = null, horaCk = salida;
                 conCoord.forEach((c, i) => {
-                    acum += (legs[i] / 60) * factor;
+                    acum += (legs[i] / 60) * obtenerFactorTrafico((acum % 1440) / 60, simDiaSemana(dia));
                     const ck = `${Math.round(c.lat * 1e6)}_${Math.round(c.lng * 1e6)}`;
                     if (ck !== ckPrev) { if (ckPrev !== null) acum += MIN_CLIENTE; ckPrev = ck; horaCk = acum; }
                     const desdeSalida = horaCk - salida;
