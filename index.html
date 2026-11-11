@@ -313,7 +313,10 @@
         .route-item.ne { border-left-color: #95a5a6 !important; background: #f3f3f3; opacity: 0.85; }
         .route-item.ne strong { text-decoration: line-through; color: #7f8c8d; }
         .tag-visita { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 8px; margin: 2px 0 3px; }
-        body.vista-repartidor #app-btn-nocontesto { display: block; width: 100%; margin-top: 8px; border: 1px solid #e6a35a; border-radius: 14px; background: #fff3e0; color: #b45f06; font-weight: 800; font-size: 13.5px; padding: 10px; cursor: pointer; font-family: inherit; }
+        /* Fila de entrega: "Marcar entregado" (acción principal, ancho) + "No contestó" (secundaria, compacta) */
+        #app-fila-entrega { display: flex; gap: 8px; align-items: stretch; margin-top: 2px; }
+        body.vista-repartidor #app-fila-entrega #app-btn-entregar { flex: 2 1 0; width: auto; min-width: 0; padding: 13px 10px; }
+        body.vista-repartidor #app-btn-nocontesto { display: block; flex: 1 1 0; min-width: 0; border: 1px solid #e6a35a; border-radius: 16px; background: #fff3e0; color: #b45f06; font-weight: 800; font-size: 13px; line-height: 1.15; padding: 8px 6px; cursor: pointer; font-family: inherit; }
         body.mapa-solo #app-btn-nocontesto { display: none !important; }
         .btn-popup-entregar { display: inline-block !important; background: #2ecc71 !important; color: white !important; border: none !important; padding: 5px 10px !important; font-size: 11px !important; font-weight: bold !important; border-radius: 4px !important; cursor: pointer !important; text-align: center; }
 
@@ -1410,8 +1413,10 @@
                 <a id="app-btn-whatsapp" href="#" target="_blank" rel="noopener">💬 WhatsApp</a>
                 <a id="app-btn-navegar" href="#" target="_blank" rel="noopener">🧭 Navegar</a>
             </div>
-            <button id="app-btn-entregar" class="app-solo-movil" onclick="irAProximoClienteDesdeBarraNav()" style="display:none;">✓ Marcar entregado</button>
-            <button id="app-btn-nocontesto" class="app-solo-movil" onclick="{ const c = obtenerProximoClientePendiente(); if (c) marcarNoContesto(c.id); }" style="display:none;">📵 No contestó / no abre</button>
+            <div id="app-fila-entrega">
+                <button id="app-btn-entregar" class="app-solo-movil" onclick="irAProximoClienteDesdeBarraNav()" style="display:none;">✓ Marcar entregado</button>
+                <button id="app-btn-nocontesto" class="app-solo-movil" onclick="{ const c = obtenerProximoClientePendiente(); if (c) marcarNoContesto(c.id); }" style="display:none;">📵 No contestó</button>
+            </div>
             <button id="nav-inferior-btn-accion" onclick="irAProximoClienteDesdeBarraNav()" style="width:46px; height:46px; border-radius:50%; background:#27ae60; border:none; box-shadow:0 2px 8px rgba(0,0,0,0.3); color:#fff; font-size:20px; cursor:pointer; flex-shrink:0;">📋</button>
         </div>
 
