@@ -1,5 +1,5 @@
 // Guarda la app para que abra rápido y sin señal; los datos siempre van a Apps Script.
-const CACHE = "finanzas-v26";
+const CACHE = "finanzas-v27";
 const SHELL = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL))); self.skipWaiting(); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(k => Promise.all(k.filter(x => x !== CACHE).map(x => caches.delete(x))))); self.clients.claim(); });
