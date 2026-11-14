@@ -1772,32 +1772,66 @@
             const entrada = prompt(`Configurar ubicación de ${deposito.nombre}:`, `${deposito.lat}, ${deposito.lng}`);
             if (entrada) {
                 const coordenadas = procesarCoordenadasDirectas(entrada);
-                if (coordenadas && confirm(`¿Cambiar la ubicación de ${deposito.nombre} a ${coordenadas.lat}, ${coordenadas.lng}?\n\nEste cambio solo dura hasta que se actualice la app.`)) {
+                if (coordenadas && confirm(`¿Cambiar la ubicación de ${deposito.nombre} a ${coordenadas.lat}, ${coordenadas.lng}?\n\nSe guardará en la base para todos los dispositivos.`)) {
                     aplicarNuevaUbicacionDeposito(coordenadas.lat, coordenadas.lng);
+                    guardarDepositoEnNube(coordenadas.lat, coordenadas.lng);
                 }
             }
         }
 
-        function aplicarNuevaUbicacionDeposito(lat, lng) {
+        function aplicarNuevaUbicacionDeposito(lat, lng, silencioso) {
             deposito.lat = lat; deposito.lng = lng;
             rutasEstructuradas.forEach(r => {
                 if (r[0] && r[0].id === 0) r[0] = deposito;
                 if (r[r.length - 1] && r[r.length - 1].id === 0) r[r.length - 1] = deposito;
             });
-            map.setView([deposito.lat, deposito.lng], 17);
+            if (!silencioso) map.setView([deposito.lat, deposito.lng], 17);
             refrescarMapaYListasVisuales();
             if (rutasOptimizadasActivas) trazarLineasYCalcularTiemposOSRM();
+        }
+
+        // ── Ubicación del TENATE guardada en la base (Script Properties de Apps Script) ──
+        // Se lee al cargar / sincronizar en todos los dispositivos; solo el admin la cambia.
+        function cargarDepositoGuardado() {
+            if (!URL_GOOGLE_SCRIPT || !URL_GOOGLE_SCRIPT.trim()) return Promise.resolve();
+            return fetch(URL_GOOGLE_SCRIPT + (URL_GOOGLE_SCRIPT.includes("?") ? "&" : "?") + "accion=deposito")
+                .then(r => r.json())
+                .then(d => {
+                    // Un Code.gs viejo ignora la acción y devuelve la lista de clientes (arreglo): se descarta.
+                    if (!d || Array.isArray(d) || typeof d.lat !== "number" || typeof d.lng !== "number") return;
+                    if (Math.abs(d.lat - deposito.lat) < 1e-7 && Math.abs(d.lng - deposito.lng) < 1e-7) return;
+                    aplicarNuevaUbicacionDeposito(d.lat, d.lng, true);
+                })
+                .catch(() => {});
+        }
+        function guardarDepositoEnNube(lat, lng) {
+            if (!URL_GOOGLE_SCRIPT || !URL_GOOGLE_SCRIPT.trim()) return;
+            fetch(URL_GOOGLE_SCRIPT, {
+                method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ accion: "guardar_deposito", lat: lat, lng: lng })
+            }).catch(() => {});
+            // Verifica que de verdad quedó guardado (con un Code.gs sin actualizar no se guarda y se perdería al recargar)
+            setTimeout(() => {
+                fetch(URL_GOOGLE_SCRIPT + (URL_GOOGLE_SCRIPT.includes("?") ? "&" : "?") + "accion=deposito")
+                    .then(r => r.json())
+                    .then(d => {
+                        const ok = d && !Array.isArray(d) && Math.abs(d.lat - lat) < 1e-6 && Math.abs(d.lng - lng) < 1e-6;
+                        mostrarAvisoApp(ok ? "✓ Ubicación del TENATE guardada en la base" : "⚠️ No se pudo guardar en la base: actualiza el Code.gs de Apps Script. La ubicación solo dura hasta recargar.", ok ? 3500 : 8000);
+                    })
+                    .catch(() => mostrarAvisoApp("⚠️ No se pudo confirmar el guardado en la base. Revisa tu conexión.", 6000));
+            }, 2500);
         }
 
         // Igual que "GPS Real" en un cliente: toma la ubicación actual del dispositivo (solo admin).
         function usarGpsRealComoDeposito() {
             if (ROL_ACTUAL !== "admin") return;
             if (!navigator.geolocation) { alert("Este dispositivo no tiene GPS disponible."); return; }
-            if (!confirm(`¿Usar tu ubicación GPS actual como ubicación de ${deposito.nombre}?\n\nColócate en el punto de salida. Este cambio solo dura hasta que se actualice la app.`)) return;
+            if (!confirm(`¿Usar tu ubicación GPS actual como ubicación de ${deposito.nombre}?\n\nColócate en el punto de salida. Se guardará en la base para todos los dispositivos.`)) return;
             navigator.geolocation.getCurrentPosition(pos => {
                 const lat = Math.round(pos.coords.latitude * 1e6) / 1e6, lng = Math.round(pos.coords.longitude * 1e6) / 1e6;
                 aplicarNuevaUbicacionDeposito(lat, lng);
-                alert(`✓ ${deposito.nombre} ahora está en ${lat}, ${lng} (precisión ≈ ${Math.round(pos.coords.accuracy)} m).`);
+                guardarDepositoEnNube(lat, lng);
+                mostrarAvisoApp(`📍 ${deposito.nombre} movido a ${lat}, ${lng} (precisión ≈ ${Math.round(pos.coords.accuracy)} m). Guardando…`, 3500);
             }, () => alert("No se pudo obtener tu ubicación. Revisa que el GPS esté activo y que hayas dado permiso."), { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
         }
 
@@ -1871,6 +1905,7 @@
 
         function importarDatosDesdeSheets(timeoutMs = 20000) {
             if(URL_GOOGLE_SCRIPT.trim() === "") return Promise.resolve();
+            cargarDepositoGuardado();
             limpiarTodoElMapa();
             clientes = [];
             tiemposEstimadosRutas = {};
@@ -1910,6 +1945,8 @@
                     // reconstruir las rutas. Si se reconstruye primero con un día inválido/viejo,
                     // no hay ningún cliente que coincida y el mapa se queda vacío, aunque el
                     // selector visualmente muestre "Todos los días" (su opción por defecto).
+                    datosNube.forEach(item => { const cl = clientes.find(c => c.id === item.id); if (cl) aplicarVisitaDeNube(cl, item); });
+
                     poblarFiltroDia();
                     reconstruirRutasEstructuradasDesdeClientes();
 
@@ -1950,6 +1987,9 @@
                     datosNube.forEach(item => {
                         const cl = clientes.find(c => c.id === item.id);
                         if (!cl) return;
+
+                        // ── "No contestó" / "No entregado" (si el servidor ya lo soporta) ──
+                        if (aplicarVisitaDeNube(cl, item)) huboCambiosEstatus = true;
 
                         // ── Estatus de entrega ──────────────────────────────────────
                         if (cl.entregado !== item.entregado || cl.metodoPago !== item.metodoPago) {
@@ -2007,7 +2047,7 @@
                             ruta.forEach(p => {
                                 if (p.id === 0) return;
                                 const act = clientes.find(c => c.id === p.id);
-                                if (act) { p.entregado = act.entregado; p.metodoPago = act.metodoPago; if (act.entregado) { p.noContesto = false; p.noEntregado = false; } }
+                                if (act) { p.entregado = act.entregado; p.metodoPago = act.metodoPago; p.noContesto = !act.entregado && !!act.noContesto; p.noEntregado = !act.entregado && !!act.noEntregado; }
                             });
 
                             // 2. Mover al final todos los clientes recién entregados,
@@ -3100,6 +3140,32 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
             if (p.noContesto) return `<button class="btn-popup-nc" onclick="event.stopPropagation(); reactivarVisita(${p.id})">↩ Reactivar</button><button class="btn-popup-nc" onclick="event.stopPropagation(); marcarNoEntregado(${p.id})">🚫 No entregado</button>`;
             return `<button class="btn-popup-nc" onclick="event.stopPropagation(); marcarNoContesto(${p.id})">📵 No contestó</button>`;
         }
+        // ── Sincronización con la hoja (columna "Estado entrega": "No contestó" / "No entregado") ──
+        // Solo se envía si el servidor ya trae el campo `estadoVisita` en la lectura (Code.gs actualizado); con un
+        // Code.gs viejo el estado se queda solo en el dispositivo, como antes (un envío desconocido marcaría "Entregado").
+        let servidorSoportaVisitas = false;
+        const visitasPendientesEnvio = {}; // id -> { est, hasta }: evita que una lectura vieja pise lo que acaba de marcar el repartidor
+        function estadoVisitaDeItem(item) { const v = (item.estadoVisita || "").toString(); return (v === "nc" || v === "ne") ? v : null; }
+        function aplicarVisitaDeNube(cl, item) {
+            if (!item || !("estadoVisita" in item)) return false;
+            servidorSoportaVisitas = true;
+            const pend = visitasPendientesEnvio[String(cl.id)];
+            const est = item.entregado ? null : estadoVisitaDeItem(item);
+            if (pend && Date.now() < pend.hasta) { if (est === pend.est) delete visitasPendientesEnvio[String(cl.id)]; return false; }
+            const antes = cl.noContesto ? "nc" : (cl.noEntregado ? "ne" : null);
+            cl.noContesto = (est === "nc"); cl.noEntregado = (est === "ne");
+            if (ROL_ACTUAL === "repartidor") guardarEstadoVisita(cl.id, est); // espejo local
+            return antes !== est;
+        }
+        function enviarEstadoVisitaNube(cl, est, reintento) {
+            if (!servidorSoportaVisitas || !URL_GOOGLE_SCRIPT) return;
+            visitasPendientesEnvio[String(cl.id)] = { est: est, hasta: Date.now() + 40000 };
+            fetch(URL_GOOGLE_SCRIPT, {
+                method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ accion: "marcar_visita", id: cl.id, nombre: cl.nombre, estado: est || "" })
+            }).catch(() => { if (!reintento) setTimeout(() => enviarEstadoVisitaNube(cl, est, true), 4000); });
+        }
+
         function marcarNoContesto(id) {
             const cl = clientes.find(c => c.id === id); if (!cl || cl.entregado) return;
             if (!confirm(`¿Marcar a ${cl.nombre} como "No contestó"?\n\nPasará al final de tu lista y no afectará el recorrido ni la hora de regreso al TENATE. Si luego contesta, tócale "Reactivar" y la app lo acomoda en tu ruta.`)) return;
@@ -3137,6 +3203,7 @@ function crearIconoRepartidorEnVivo(anguloGrados) {
         function cambiarEstadoVisita(cl, est) {
             guardarEstadoVisita(cl.id, est);
             fijarFlagsVisita(cl.id, est);
+            enviarEstadoVisitaNube(cl, est);
             map.closePopup();
             // Orden de la lista: pendientes → no contestó → entregados / no entregados → depósito de cierre.
             // Se inserta justo antes del primer "no contestó" (si se reactiva) o del primer cerrado (si pasa a nc/ne).
