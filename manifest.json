@@ -1,6 +1,6 @@
 {
-  "name": "Logística TENATE",
-  "short_name": "TENATE",
+  "name": "SCE Tenate",
+  "short_name": "SCE Tenate",
   "description": "Sistema de control de entregas El TENATE",
   "lang": "es",
   "start_url": "./",
